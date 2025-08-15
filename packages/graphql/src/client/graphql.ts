@@ -765,11 +765,13 @@ export type Library = {
   /** Get the details of the last scan job for this library, if any exists. */
   lastScan?: Maybe<LibraryScanRecord>;
   lastScannedAt?: Maybe<Scalars['DateTime']['output']>;
+  mediaAlphabet: Scalars['JSONObject']['output'];
   name: Scalars['String']['output'];
   path: Scalars['String']['output'];
   /** Get the full history of scan jobs for this library. */
   scanHistory: Array<LibraryScanRecord>;
   series: Array<Series>;
+  seriesAlphabet: Scalars['JSONObject']['output'];
   stats: LibraryStats;
   status: FileStatus;
   tags: Array<Tag>;
@@ -1016,7 +1018,7 @@ export type Media = {
    */
   thumbnail: ImageRef;
   /** The timestamp of the last time the media was updated. This will be set during creation, as well */
-  updatedAt: Scalars['DateTime']['output'];
+  updatedAt?: Maybe<Scalars['DateTime']['output']>;
 };
 
 
@@ -2028,6 +2030,8 @@ export type Query = {
   keepReading: PaginatedMediaResponse;
   lastVisitedLibrary?: Maybe<Library>;
   libraries: PaginatedLibraryResponse;
+  /** Returns the available alphabet for all libraries in the server */
+  librariesAlphabet: Scalars['JSONObject']['output'];
   libraryById?: Maybe<Library>;
   listDirectory: PaginatedDirectoryListingResponse;
   /**
@@ -2040,6 +2044,8 @@ export type Query = {
   logs: PaginatedLogResponse;
   me: User;
   media: PaginatedMediaResponse;
+  /** Returns the available alphabet for all media in the server */
+  mediaAlphabet: Scalars['JSONObject']['output'];
   mediaById?: Maybe<Media>;
   mediaByPath?: Maybe<Media>;
   mediaMetadataOverview: MediaMetadataOverview;
@@ -2064,6 +2070,8 @@ export type Query = {
   recentlyAddedSeries: PaginatedSeriesResponse;
   scheduledJobConfigs: Array<ScheduledJobConfig>;
   series: PaginatedSeriesResponse;
+  /** Returns the available alphabet for all series in the server */
+  seriesAlphabet: Scalars['JSONObject']['output'];
   seriesById?: Maybe<Series>;
   smartListById?: Maybe<SmartList>;
   smartListItems: SmartListItems;
@@ -2419,6 +2427,7 @@ export type Series = {
   library: Library;
   libraryId?: Maybe<Scalars['String']['output']>;
   media: Array<Media>;
+  mediaAlphabet: Scalars['JSONObject']['output'];
   mediaCount: Scalars['Int']['output'];
   metadata?: Maybe<SeriesMetadataModel>;
   name: Scalars['String']['output'];
@@ -2436,7 +2445,7 @@ export type Series = {
   thumbnail: ImageRef;
   unreadCount: Scalars['Int']['output'];
   upNext: Array<Media>;
-  updatedAt: Scalars['DateTime']['output'];
+  updatedAt?: Maybe<Scalars['DateTime']['output']>;
 };
 
 
@@ -3076,6 +3085,20 @@ export type LastVisitedLibraryQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type LastVisitedLibraryQuery = { __typename?: 'Query', lastVisitedLibrary?: { __typename?: 'Library', id: string, name: string, thumbnail: { __typename?: 'ImageRef', url: string } } | null };
 
+export type LibraryBooksAlphabetQueryVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type LibraryBooksAlphabetQuery = { __typename?: 'Query', libraryById?: { __typename?: 'Library', mediaAlphabet: any } | null };
+
+export type LibrarySeriesAlphabetQueryVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type LibrarySeriesAlphabetQuery = { __typename?: 'Query', libraryById?: { __typename?: 'Library', seriesAlphabet: any } | null };
+
 export type SideBarQueryQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -3149,6 +3172,13 @@ export type DeleteBookmarkMutationVariables = Exact<{
 
 export type DeleteBookmarkMutation = { __typename?: 'Mutation', deleteBookmark: { __typename: 'Bookmark' } };
 
+export type SeriesBooksAlphabetQueryVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type SeriesBooksAlphabetQuery = { __typename?: 'Query', seriesById?: { __typename?: 'Series', mediaAlphabet: any } | null };
+
 export type UsePreferencesMutationVariables = Exact<{
   input: UpdateUserPreferencesInput;
 }>;
@@ -3210,6 +3240,11 @@ export type BooksAfterCurrentQueryQuery = { __typename?: 'Query', mediaById?: { 
         { __typename?: 'Media', id: string }
         & { ' $fragmentRefs'?: { 'BookCardFragment': BookCardFragment } }
       )>, pageInfo: { __typename: 'CursorPaginationInfo', currentCursor?: string | null, nextCursor?: string | null, limit: number } | { __typename: 'OffsetPaginationInfo' } } } | null };
+
+export type BooksAlphabetQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type BooksAlphabetQuery = { __typename?: 'Query', mediaAlphabet: any };
 
 export type EmailBookDropdownDeviceQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -4171,6 +4206,20 @@ export const LastVisitedLibraryDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<LastVisitedLibraryQuery, LastVisitedLibraryQueryVariables>;
+export const LibraryBooksAlphabetDocument = new TypedDocumentString(`
+    query LibraryBooksAlphabet($id: ID!) {
+  libraryById(id: $id) {
+    mediaAlphabet
+  }
+}
+    `) as unknown as TypedDocumentString<LibraryBooksAlphabetQuery, LibraryBooksAlphabetQueryVariables>;
+export const LibrarySeriesAlphabetDocument = new TypedDocumentString(`
+    query LibrarySeriesAlphabet($id: ID!) {
+  libraryById(id: $id) {
+    seriesAlphabet
+  }
+}
+    `) as unknown as TypedDocumentString<LibrarySeriesAlphabetQuery, LibrarySeriesAlphabetQueryVariables>;
 export const SideBarQueryDocument = new TypedDocumentString(`
     query SideBarQuery {
   me {
@@ -4317,6 +4366,13 @@ export const DeleteBookmarkDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<DeleteBookmarkMutation, DeleteBookmarkMutationVariables>;
+export const SeriesBooksAlphabetDocument = new TypedDocumentString(`
+    query SeriesBooksAlphabet($id: ID!) {
+  seriesById(id: $id) {
+    mediaAlphabet
+  }
+}
+    `) as unknown as TypedDocumentString<SeriesBooksAlphabetQuery, SeriesBooksAlphabetQueryVariables>;
 export const UsePreferencesDocument = new TypedDocumentString(`
     mutation UsePreferences($input: UpdateUserPreferencesInput!) {
   updateViewerPreferences(input: $input) {
@@ -4452,6 +4508,11 @@ export const BooksAfterCurrentQueryDocument = new TypedDocumentString(`
     completedAt
   }
 }`) as unknown as TypedDocumentString<BooksAfterCurrentQueryQuery, BooksAfterCurrentQueryQueryVariables>;
+export const BooksAlphabetDocument = new TypedDocumentString(`
+    query BooksAlphabet {
+  mediaAlphabet
+}
+    `) as unknown as TypedDocumentString<BooksAlphabetQuery, BooksAlphabetQueryVariables>;
 export const EmailBookDropdownDeviceDocument = new TypedDocumentString(`
     query EmailBookDropdownDevice {
   emailDevices {

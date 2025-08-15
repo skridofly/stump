@@ -23,6 +23,8 @@ type Documents = {
     "\n\tquery MediaFilterForm($seriesId: ID) {\n\t\tmediaMetadataOverview(seriesId: $seriesId) {\n\t\t\tgenres\n\t\t\twriters\n\t\t\tpencillers\n\t\t\tcolorists\n\t\t\tletterers\n\t\t\tinkers\n\t\t\tpublishers\n\t\t\teditors\n\t\t\tcharacters\n\t\t}\n\t}\n": typeof types.MediaFilterFormDocument,
     "\n\tmutation DeleteLibrary($id: ID!) {\n\t\tdeleteLibrary(id: $id) {\n\t\t\tid\n\t\t}\n\t}\n": typeof types.DeleteLibraryDocument,
     "\n\tquery LastVisitedLibrary {\n\t\tlastVisitedLibrary {\n\t\t\tid\n\t\t\tname\n\t\t\tthumbnail {\n\t\t\t\turl\n\t\t\t}\n\t\t}\n\t}\n": typeof types.LastVisitedLibraryDocument,
+    "\n\tquery LibraryBooksAlphabet($id: ID!) {\n\t\tlibraryById(id: $id) {\n\t\t\tmediaAlphabet\n\t\t}\n\t}\n": typeof types.LibraryBooksAlphabetDocument,
+    "\n\tquery LibrarySeriesAlphabet($id: ID!) {\n\t\tlibraryById(id: $id) {\n\t\t\tseriesAlphabet\n\t\t}\n\t}\n": typeof types.LibrarySeriesAlphabetDocument,
     "\n\tquery SideBarQuery {\n\t\tme {\n\t\t\tid\n\t\t\tpreferences {\n\t\t\t\tnavigationArrangement {\n\t\t\t\t\tlocked\n\t\t\t\t\tsections {\n\t\t\t\t\t\tconfig {\n\t\t\t\t\t\t\t__typename\n\t\t\t\t\t\t\t... on SystemArrangementConfig {\n\t\t\t\t\t\t\t\tvariant\n\t\t\t\t\t\t\t\tlinks\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t}\n\t\t\t\t\t\tvisible\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n": typeof types.SideBarQueryDocument,
     "\n\tquery BookClubSideBarSection {\n\t\tbookClubs {\n\t\t\tid\n\t\t\tname\n\t\t\temoji\n\t\t\tmembers {\n\t\t\t\tid\n\t\t\t\tuserId\n\t\t\t\trole\n\t\t\t}\n\t\t}\n\t}\n": typeof types.BookClubSideBarSectionDocument,
     "\n\tmutation UpdateLibraryEmoji($id: ID!, $emoji: String) {\n\t\tupdateLibraryEmoji(id: $id, emoji: $emoji) {\n\t\t\tid\n\t\t}\n\t}\n": typeof types.UpdateLibraryEmojiDocument,
@@ -35,6 +37,7 @@ type Documents = {
     "\n\tmutation UpdateEpubProgress($input: EpubProgressInput!) {\n\t\tupdateEpubProgress(input: $input) {\n\t\t\t__typename\n\t\t}\n\t}\n": typeof types.UpdateEpubProgressDocument,
     "\n\tmutation CreateOrUpdateBookmark($input: BookmarkInput!) {\n\t\tcreateOrUpdateBookmark(input: $input) {\n\t\t\t__typename\n\t\t}\n\t}\n": typeof types.CreateOrUpdateBookmarkDocument,
     "\n\tmutation DeleteBookmark($epubcfi: String!) {\n\t\tdeleteBookmark(epubcfi: $epubcfi) {\n\t\t\t__typename\n\t\t}\n\t}\n": typeof types.DeleteBookmarkDocument,
+    "\n\tquery SeriesBooksAlphabet($id: ID!) {\n\t\tseriesById(id: $id) {\n\t\t\tmediaAlphabet\n\t\t}\n\t}\n": typeof types.SeriesBooksAlphabetDocument,
     "\n\tmutation UsePreferences($input: UpdateUserPreferencesInput!) {\n\t\tupdateViewerPreferences(input: $input) {\n\t\t\t__typename\n\t\t}\n\t}\n": typeof types.UsePreferencesDocument,
     "\n\tmutation BookCompletionToggleButtonComplete($id: ID!, $isComplete: Boolean!, $page: Int) {\n\t\tmarkMediaAsComplete(id: $id, isComplete: $isComplete, page: $page) {\n\t\t\tcompletedAt\n\t\t}\n\t}\n": typeof types.BookCompletionToggleButtonCompleteDocument,
     "\n\tmutation BookCompletionToggleButtonDeleteSession($id: ID!) {\n\t\tdeleteMediaProgress(id: $id) {\n\t\t\t__typename\n\t\t}\n\t}\n": typeof types.BookCompletionToggleButtonDeleteSessionDocument,
@@ -44,6 +47,7 @@ type Documents = {
     "\n\tquery BookOverviewScene($id: ID!) {\n\t\tmediaById(id: $id) {\n\t\t\tid\n\t\t\t...BookCard\n\t\t\t...BookFileInformation\n\t\t\tresolvedName\n\t\t\textension\n\t\t\tmetadata {\n\t\t\t\tlinks\n\t\t\t\tsummary\n\t\t\t}\n\t\t\treadHistory {\n\t\t\t\tcompletedAt\n\t\t\t}\n\t\t}\n\t}\n": typeof types.BookOverviewSceneDocument,
     "\n\tquery BookOverviewHeader($id: ID!) {\n\t\tmediaById(id: $id) {\n\t\t\tid\n\t\t\tresolvedName\n\t\t\tseriesId\n\t\t\textension\n\t\t\tpages\n\t\t\tmetadata {\n\t\t\t\tageRating\n\t\t\t\tgenres\n\t\t\t\tpublisher\n\t\t\t\twriters\n\t\t\t\tyear\n\t\t\t}\n\t\t\ttags {\n\t\t\t\tid\n\t\t\t\tname\n\t\t\t}\n\t\t}\n\t}\n": typeof types.BookOverviewHeaderDocument,
     "\n\tquery BooksAfterCurrentQuery($id: ID!, $pagination: Pagination) {\n\t\tmediaById(id: $id) {\n\t\t\tnextInSeries(pagination: $pagination) {\n\t\t\t\tnodes {\n\t\t\t\t\tid\n\t\t\t\t\t...BookCard\n\t\t\t\t}\n\t\t\t\tpageInfo {\n\t\t\t\t\t__typename\n\t\t\t\t\t... on CursorPaginationInfo {\n\t\t\t\t\t\tcurrentCursor\n\t\t\t\t\t\tnextCursor\n\t\t\t\t\t\tlimit\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n": typeof types.BooksAfterCurrentQueryDocument,
+    "\n\tquery BooksAlphabet {\n\t\tmediaAlphabet\n\t}\n": typeof types.BooksAlphabetDocument,
     "\n\tquery EmailBookDropdownDevice {\n\t\temailDevices {\n\t\t\tid\n\t\t\tname\n\t\t}\n\t}\n": typeof types.EmailBookDropdownDeviceDocument,
     "\n\tmutation SendEmailAttachment($id: ID!, $sendTo: [EmailerSendTo!]!) {\n\t\tsendAttachmentEmail(input: { mediaIds: [$id], sendTo: $sendTo }) {\n\t\t\tsentCount\n\t\t\terrors\n\t\t}\n\t}\n": typeof types.SendEmailAttachmentDocument,
     "\n\tquery BookReaderScene($id: ID!) {\n\t\tmediaById(id: $id) {\n\t\t\tid\n\t\t\tresolvedName\n\t\t\tpages\n\t\t\textension\n\t\t\treadProgress {\n\t\t\t\tpercentageCompleted\n\t\t\t\tepubcfi\n\t\t\t\tpage\n\t\t\t\telapsedSeconds\n\t\t\t}\n\t\t\tlibraryConfig {\n\t\t\t\tdefaultReadingImageScaleFit\n\t\t\t\tdefaultReadingMode\n\t\t\t\tdefaultReadingDir\n\t\t\t}\n\t\t\tmetadata {\n\t\t\t\tpageAnalysis {\n\t\t\t\t\tdimensions {\n\t\t\t\t\t\theight\n\t\t\t\t\t\twidth\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n": typeof types.BookReaderSceneDocument,
@@ -154,6 +158,8 @@ const documents: Documents = {
     "\n\tquery MediaFilterForm($seriesId: ID) {\n\t\tmediaMetadataOverview(seriesId: $seriesId) {\n\t\t\tgenres\n\t\t\twriters\n\t\t\tpencillers\n\t\t\tcolorists\n\t\t\tletterers\n\t\t\tinkers\n\t\t\tpublishers\n\t\t\teditors\n\t\t\tcharacters\n\t\t}\n\t}\n": types.MediaFilterFormDocument,
     "\n\tmutation DeleteLibrary($id: ID!) {\n\t\tdeleteLibrary(id: $id) {\n\t\t\tid\n\t\t}\n\t}\n": types.DeleteLibraryDocument,
     "\n\tquery LastVisitedLibrary {\n\t\tlastVisitedLibrary {\n\t\t\tid\n\t\t\tname\n\t\t\tthumbnail {\n\t\t\t\turl\n\t\t\t}\n\t\t}\n\t}\n": types.LastVisitedLibraryDocument,
+    "\n\tquery LibraryBooksAlphabet($id: ID!) {\n\t\tlibraryById(id: $id) {\n\t\t\tmediaAlphabet\n\t\t}\n\t}\n": types.LibraryBooksAlphabetDocument,
+    "\n\tquery LibrarySeriesAlphabet($id: ID!) {\n\t\tlibraryById(id: $id) {\n\t\t\tseriesAlphabet\n\t\t}\n\t}\n": types.LibrarySeriesAlphabetDocument,
     "\n\tquery SideBarQuery {\n\t\tme {\n\t\t\tid\n\t\t\tpreferences {\n\t\t\t\tnavigationArrangement {\n\t\t\t\t\tlocked\n\t\t\t\t\tsections {\n\t\t\t\t\t\tconfig {\n\t\t\t\t\t\t\t__typename\n\t\t\t\t\t\t\t... on SystemArrangementConfig {\n\t\t\t\t\t\t\t\tvariant\n\t\t\t\t\t\t\t\tlinks\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t}\n\t\t\t\t\t\tvisible\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n": types.SideBarQueryDocument,
     "\n\tquery BookClubSideBarSection {\n\t\tbookClubs {\n\t\t\tid\n\t\t\tname\n\t\t\temoji\n\t\t\tmembers {\n\t\t\t\tid\n\t\t\t\tuserId\n\t\t\t\trole\n\t\t\t}\n\t\t}\n\t}\n": types.BookClubSideBarSectionDocument,
     "\n\tmutation UpdateLibraryEmoji($id: ID!, $emoji: String) {\n\t\tupdateLibraryEmoji(id: $id, emoji: $emoji) {\n\t\t\tid\n\t\t}\n\t}\n": types.UpdateLibraryEmojiDocument,
@@ -166,6 +172,7 @@ const documents: Documents = {
     "\n\tmutation UpdateEpubProgress($input: EpubProgressInput!) {\n\t\tupdateEpubProgress(input: $input) {\n\t\t\t__typename\n\t\t}\n\t}\n": types.UpdateEpubProgressDocument,
     "\n\tmutation CreateOrUpdateBookmark($input: BookmarkInput!) {\n\t\tcreateOrUpdateBookmark(input: $input) {\n\t\t\t__typename\n\t\t}\n\t}\n": types.CreateOrUpdateBookmarkDocument,
     "\n\tmutation DeleteBookmark($epubcfi: String!) {\n\t\tdeleteBookmark(epubcfi: $epubcfi) {\n\t\t\t__typename\n\t\t}\n\t}\n": types.DeleteBookmarkDocument,
+    "\n\tquery SeriesBooksAlphabet($id: ID!) {\n\t\tseriesById(id: $id) {\n\t\t\tmediaAlphabet\n\t\t}\n\t}\n": types.SeriesBooksAlphabetDocument,
     "\n\tmutation UsePreferences($input: UpdateUserPreferencesInput!) {\n\t\tupdateViewerPreferences(input: $input) {\n\t\t\t__typename\n\t\t}\n\t}\n": types.UsePreferencesDocument,
     "\n\tmutation BookCompletionToggleButtonComplete($id: ID!, $isComplete: Boolean!, $page: Int) {\n\t\tmarkMediaAsComplete(id: $id, isComplete: $isComplete, page: $page) {\n\t\t\tcompletedAt\n\t\t}\n\t}\n": types.BookCompletionToggleButtonCompleteDocument,
     "\n\tmutation BookCompletionToggleButtonDeleteSession($id: ID!) {\n\t\tdeleteMediaProgress(id: $id) {\n\t\t\t__typename\n\t\t}\n\t}\n": types.BookCompletionToggleButtonDeleteSessionDocument,
@@ -175,6 +182,7 @@ const documents: Documents = {
     "\n\tquery BookOverviewScene($id: ID!) {\n\t\tmediaById(id: $id) {\n\t\t\tid\n\t\t\t...BookCard\n\t\t\t...BookFileInformation\n\t\t\tresolvedName\n\t\t\textension\n\t\t\tmetadata {\n\t\t\t\tlinks\n\t\t\t\tsummary\n\t\t\t}\n\t\t\treadHistory {\n\t\t\t\tcompletedAt\n\t\t\t}\n\t\t}\n\t}\n": types.BookOverviewSceneDocument,
     "\n\tquery BookOverviewHeader($id: ID!) {\n\t\tmediaById(id: $id) {\n\t\t\tid\n\t\t\tresolvedName\n\t\t\tseriesId\n\t\t\textension\n\t\t\tpages\n\t\t\tmetadata {\n\t\t\t\tageRating\n\t\t\t\tgenres\n\t\t\t\tpublisher\n\t\t\t\twriters\n\t\t\t\tyear\n\t\t\t}\n\t\t\ttags {\n\t\t\t\tid\n\t\t\t\tname\n\t\t\t}\n\t\t}\n\t}\n": types.BookOverviewHeaderDocument,
     "\n\tquery BooksAfterCurrentQuery($id: ID!, $pagination: Pagination) {\n\t\tmediaById(id: $id) {\n\t\t\tnextInSeries(pagination: $pagination) {\n\t\t\t\tnodes {\n\t\t\t\t\tid\n\t\t\t\t\t...BookCard\n\t\t\t\t}\n\t\t\t\tpageInfo {\n\t\t\t\t\t__typename\n\t\t\t\t\t... on CursorPaginationInfo {\n\t\t\t\t\t\tcurrentCursor\n\t\t\t\t\t\tnextCursor\n\t\t\t\t\t\tlimit\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n": types.BooksAfterCurrentQueryDocument,
+    "\n\tquery BooksAlphabet {\n\t\tmediaAlphabet\n\t}\n": types.BooksAlphabetDocument,
     "\n\tquery EmailBookDropdownDevice {\n\t\temailDevices {\n\t\t\tid\n\t\t\tname\n\t\t}\n\t}\n": types.EmailBookDropdownDeviceDocument,
     "\n\tmutation SendEmailAttachment($id: ID!, $sendTo: [EmailerSendTo!]!) {\n\t\tsendAttachmentEmail(input: { mediaIds: [$id], sendTo: $sendTo }) {\n\t\t\tsentCount\n\t\t\terrors\n\t\t}\n\t}\n": types.SendEmailAttachmentDocument,
     "\n\tquery BookReaderScene($id: ID!) {\n\t\tmediaById(id: $id) {\n\t\t\tid\n\t\t\tresolvedName\n\t\t\tpages\n\t\t\textension\n\t\t\treadProgress {\n\t\t\t\tpercentageCompleted\n\t\t\t\tepubcfi\n\t\t\t\tpage\n\t\t\t\telapsedSeconds\n\t\t\t}\n\t\t\tlibraryConfig {\n\t\t\t\tdefaultReadingImageScaleFit\n\t\t\t\tdefaultReadingMode\n\t\t\t\tdefaultReadingDir\n\t\t\t}\n\t\t\tmetadata {\n\t\t\t\tpageAnalysis {\n\t\t\t\t\tdimensions {\n\t\t\t\t\t\theight\n\t\t\t\t\t\twidth\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n": types.BookReaderSceneDocument,
@@ -312,6 +320,14 @@ export function graphql(source: "\n\tquery LastVisitedLibrary {\n\t\tlastVisited
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
+export function graphql(source: "\n\tquery LibraryBooksAlphabet($id: ID!) {\n\t\tlibraryById(id: $id) {\n\t\t\tmediaAlphabet\n\t\t}\n\t}\n"): typeof import('./graphql').LibraryBooksAlphabetDocument;
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n\tquery LibrarySeriesAlphabet($id: ID!) {\n\t\tlibraryById(id: $id) {\n\t\t\tseriesAlphabet\n\t\t}\n\t}\n"): typeof import('./graphql').LibrarySeriesAlphabetDocument;
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
 export function graphql(source: "\n\tquery SideBarQuery {\n\t\tme {\n\t\t\tid\n\t\t\tpreferences {\n\t\t\t\tnavigationArrangement {\n\t\t\t\t\tlocked\n\t\t\t\t\tsections {\n\t\t\t\t\t\tconfig {\n\t\t\t\t\t\t\t__typename\n\t\t\t\t\t\t\t... on SystemArrangementConfig {\n\t\t\t\t\t\t\t\tvariant\n\t\t\t\t\t\t\t\tlinks\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t}\n\t\t\t\t\t\tvisible\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n"): typeof import('./graphql').SideBarQueryDocument;
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
@@ -360,6 +376,10 @@ export function graphql(source: "\n\tmutation DeleteBookmark($epubcfi: String!) 
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
+export function graphql(source: "\n\tquery SeriesBooksAlphabet($id: ID!) {\n\t\tseriesById(id: $id) {\n\t\t\tmediaAlphabet\n\t\t}\n\t}\n"): typeof import('./graphql').SeriesBooksAlphabetDocument;
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
 export function graphql(source: "\n\tmutation UsePreferences($input: UpdateUserPreferencesInput!) {\n\t\tupdateViewerPreferences(input: $input) {\n\t\t\t__typename\n\t\t}\n\t}\n"): typeof import('./graphql').UsePreferencesDocument;
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
@@ -393,6 +413,10 @@ export function graphql(source: "\n\tquery BookOverviewHeader($id: ID!) {\n\t\tm
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n\tquery BooksAfterCurrentQuery($id: ID!, $pagination: Pagination) {\n\t\tmediaById(id: $id) {\n\t\t\tnextInSeries(pagination: $pagination) {\n\t\t\t\tnodes {\n\t\t\t\t\tid\n\t\t\t\t\t...BookCard\n\t\t\t\t}\n\t\t\t\tpageInfo {\n\t\t\t\t\t__typename\n\t\t\t\t\t... on CursorPaginationInfo {\n\t\t\t\t\t\tcurrentCursor\n\t\t\t\t\t\tnextCursor\n\t\t\t\t\t\tlimit\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n"): typeof import('./graphql').BooksAfterCurrentQueryDocument;
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n\tquery BooksAlphabet {\n\t\tmediaAlphabet\n\t}\n"): typeof import('./graphql').BooksAlphabetDocument;
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
