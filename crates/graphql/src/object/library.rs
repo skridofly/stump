@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 
-use async_graphql::{ComplexObject, Context, Result, SimpleObject};
+use async_graphql::{
+	dataloader::DataLoader, ComplexObject, Context, Result, SimpleObject,
+};
 
 use models::{
 	entity::{
@@ -18,8 +20,9 @@ use sea_orm::{
 };
 
 use crate::{
-	data::{CoreContext, RequestContext, ServiceContext},
+	data::{AuthContext, CoreContext, ServiceContext},
 	guard::PermissionGuard,
+	loader::favorite::{FavoriteLibraryLoaderKey, FavoritesLoader},
 	object::library_scan_record::LibraryScanRecord,
 };
 
@@ -75,6 +78,20 @@ impl Library {
 			.await?;
 
 		Ok(users.into_iter().map(User::from).collect())
+	}
+
+	async fn is_favorite(&self, ctx: &Context<'_>) -> Result<bool> {
+		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
+		let loader = ctx.data::<DataLoader<FavoritesLoader>>()?;
+
+		let is_favorite = loader
+			.load_one(FavoriteLibraryLoaderKey {
+				user_id: user.id.clone(),
+				library_id: self.model.id.clone(),
+			})
+			.await?;
+
+		Ok(is_favorite.unwrap_or(false))
 	}
 
 	/// Get the details of the last scan job for this library, if any exists.
@@ -193,7 +210,7 @@ impl Library {
 		ctx: &Context<'_>,
 		all_users: Option<bool>,
 	) -> Result<LibraryStats> {
-		let RequestContext { user, .. } = ctx.data::<RequestContext>()?;
+		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
 		let conn = ctx.data::<CoreContext>()?.conn.as_ref();
 
 		let result = conn

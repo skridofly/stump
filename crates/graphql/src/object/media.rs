@@ -9,8 +9,9 @@ use models::{
 use sea_orm::{prelude::*, sea_query::Query, QuerySelect};
 
 use crate::{
-	data::{CoreContext, RequestContext, ServiceContext},
+	data::{AuthContext, CoreContext, ServiceContext},
 	loader::{
+		favorite::{FavoriteMediaLoaderKey, FavoritesLoader},
 		reading_session::{
 			ActiveReadingSessionLoaderKey, FinishedReadingSessionLoaderKey,
 			ReadingSessionLoader,
@@ -57,6 +58,20 @@ impl Media {
 
 #[ComplexObject]
 impl Media {
+	async fn is_favorite(&self, ctx: &Context<'_>) -> Result<bool> {
+		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
+		let loader = ctx.data::<DataLoader<FavoritesLoader>>()?;
+
+		let is_favorite = loader
+			.load_one(FavoriteMediaLoaderKey {
+				user_id: user.id.clone(),
+				media_id: self.model.id.clone(),
+			})
+			.await?;
+
+		Ok(is_favorite.unwrap_or(false))
+	}
+
 	async fn tags(&self, ctx: &Context<'_>) -> Result<Vec<Tag>> {
 		let conn = ctx.data::<CoreContext>()?.conn.as_ref();
 		let model = tag::Entity::find_for_media_id(&self.model.id.clone())
@@ -153,7 +168,7 @@ impl Media {
 		&self,
 		ctx: &Context<'_>,
 	) -> Result<Option<ActiveReadingSession>> {
-		let RequestContext { user, .. } = ctx.data::<RequestContext>()?;
+		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
 		let loader = ctx.data::<DataLoader<ReadingSessionLoader>>()?;
 
 		let progress = loader
@@ -171,7 +186,7 @@ impl Media {
 		&self,
 		ctx: &Context<'_>,
 	) -> Result<Vec<FinishedReadingSession>> {
-		let RequestContext { user, .. } = ctx.data::<RequestContext>()?;
+		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
 		let loader = ctx.data::<DataLoader<ReadingSessionLoader>>()?;
 
 		let history = loader
@@ -191,7 +206,7 @@ impl Media {
 		ctx: &Context<'_>,
 		#[graphql(default)] pagination: Pagination,
 	) -> Result<PaginatedResponse<Media>> {
-		let RequestContext { user, .. } = ctx.data::<RequestContext>()?;
+		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
 		let conn = ctx.data::<CoreContext>()?.conn.as_ref();
 
 		let pagination = match pagination {
