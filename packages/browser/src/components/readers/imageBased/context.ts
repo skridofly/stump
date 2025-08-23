@@ -9,6 +9,9 @@ export type ImagePageDimensionRef = {
 	ratio: number
 }
 
+// TODO: I think we can move this and useImageSizes to the client package so we can
+// introduce better code sharing between platforms.
+
 export type IImageBaseReaderContext = {
 	/**
 	 * The media entity associated with the reader
@@ -23,13 +26,17 @@ export type IImageBaseReaderContext = {
 	 */
 	setCurrentPage: (page: number) => void
 	/**
-	 * The dimensions of the pages in the book, as they are loaded
+	 * A function to get the URL of a specific page
 	 */
-	pageDimensions: Record<number, ImagePageDimensionRef>
+	getPageUrl: (page: number) => string
 	/**
-	 * A function to set the dimensions of a page
+	 * The sizes of the pages in the book, as they are loaded
 	 */
-	setDimensions: React.Dispatch<React.SetStateAction<Record<number, ImagePageDimensionRef>>>
+	imageSizes: Record<number, ImagePageDimensionRef>
+	/**
+	 * A function to set the sizes of a page
+	 */
+	setPageSize: (page: number, dimensions: ImagePageDimensionRef) => void
 	/**
 	 * The page sets for the book
 	 */
@@ -38,6 +45,8 @@ export type IImageBaseReaderContext = {
 	 * A function to reset the read timer
 	 */
 	resetTimer: () => void
+
+	toggleToolbar: () => void
 }
 
 export const ImageBaseReaderContext = createContext<IImageBaseReaderContext | null>(null)
