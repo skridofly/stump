@@ -40,6 +40,8 @@ pub enum SmartListGroupJoiner {
 	Not,
 }
 
+// TODO(sea-orm): Consider box-ing these
+#[allow(clippy::large_enum_variant)]
 #[derive(OneofObject, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum SmartListFilterInput {

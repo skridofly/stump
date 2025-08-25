@@ -55,7 +55,7 @@ impl Loader<FavoriteMediaLoaderKey> for FavoritesLoader {
 				.find(|f| f.user_id == key.user_id && f.media_id == key.media_id)
 				.cloned();
 
-			if let Some(_) = favorite {
+			if favorite.is_some() {
 				result.insert(key.clone(), true);
 			}
 		}
@@ -105,7 +105,7 @@ impl Loader<FavoriteSeriesLoaderKey> for FavoritesLoader {
 				.find(|f| f.user_id == key.user_id && f.series_id == key.series_id)
 				.cloned();
 
-			if let Some(_) = favorite {
+			if favorite.is_some() {
 				result.insert(key.clone(), true);
 			}
 		}
@@ -155,7 +155,7 @@ impl Loader<FavoriteLibraryLoaderKey> for FavoritesLoader {
 				.find(|f| f.user_id == key.user_id && f.library_id == key.library_id)
 				.cloned();
 
-			if let Some(_) = favorite {
+			if favorite.is_some() {
 				result.insert(key.clone(), true);
 			}
 		}

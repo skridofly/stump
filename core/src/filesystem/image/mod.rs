@@ -11,7 +11,7 @@ use image::ImageFormat;
 use models::shared::image_processor_options::{
 	ScaledDimensionResize, SupportedImageFormat,
 };
-pub use process::ImageProcessor;
+pub use process::{ImageProcessor, ImageProcessorOptionsExt};
 pub use thumbnail::*;
 use tokio::{sync::oneshot, task::spawn_blocking};
 

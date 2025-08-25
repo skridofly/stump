@@ -69,7 +69,7 @@ async fn group_by_series(
 				.remove(&series_model.series.id)
 				.unwrap_or_default();
 			SmartListGroupedItem {
-				entity: SmartListItemEntity::Series(series_model.into()),
+				entity: SmartListItemEntity::Series(Box::new(series_model.into())),
 				books,
 			}
 		})
@@ -136,7 +136,7 @@ async fn group_by_library(
 				.collect();
 
 			SmartListGroupedItem {
-				entity: SmartListItemEntity::Library(library_model.into()),
+				entity: SmartListItemEntity::Library(Box::new(library_model.into())),
 				books,
 			}
 		})

@@ -70,7 +70,7 @@ impl Loader<LibraryToMediaLoaderKey> for LibraryLoader {
 		// map the libraries which are related to the series IDs... So this actually
 		// won't work yet. It might just need to be a more complex join with a selection
 		// to get them into the map correctly
-		let models = library::Entity::find()
+		let _models = library::Entity::find()
 			.filter(
 				library::Column::Id.in_subquery(
 					Query::select()

@@ -68,8 +68,6 @@ impl From<FileError> for CoreError {
 
 #[derive(Error, Debug)]
 pub enum ScanError {
-	#[error("A query error occurred: {0}")]
-	QueryError(String),
 	#[error("Unsupported file: {0}")]
 	UnsupportedFile(String),
 	#[error("Failed to build globset from invalid .stumpignore file: {0}")]

@@ -1,4 +1,4 @@
-use async_graphql::{Context, Object, Result, SimpleObject, Union, ID};
+use async_graphql::{Context, Object, Result, Union, ID};
 use chrono::Utc;
 use models::{
 	entity::{

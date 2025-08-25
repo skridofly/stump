@@ -18,7 +18,7 @@ use sea_orm::{
 use stump_core::filesystem::{
 	image::{
 		generate_book_thumbnail, remove_thumbnails, GenerateThumbnailOptions,
-		ThumbnailGenerationJob, ThumbnailGenerationJobParams,
+		ImageProcessorOptionsExt, ThumbnailGenerationJob, ThumbnailGenerationJobParams,
 	},
 	scanner::{LibraryScanJob, ScanOptions},
 };
@@ -186,6 +186,14 @@ impl LibraryMutation {
 		let tags = input.tags.take();
 
 		let txn = core.conn.as_ref().begin().await?;
+
+		if let Some(thumbnail_config) = input
+			.config
+			.as_ref()
+			.and_then(|c| c.thumbnail_config.as_ref())
+		{
+			thumbnail_config.validate()?;
+		}
 
 		let (library, config) = input.into_active_model();
 

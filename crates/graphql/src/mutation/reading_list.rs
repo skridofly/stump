@@ -115,13 +115,13 @@ async fn create_reading_list_items(
 }
 
 async fn get_for_owner(
-	id: &String,
+	id: &str,
 	conn: &DbConn,
 	user_id: String,
 ) -> Result<reading_list::Model> {
 	// Check if reading list exists
 	let reading_list = reading_list::Entity::find()
-		.filter(reading_list::Column::Id.eq(id.clone()))
+		.filter(reading_list::Column::Id.eq(id.to_owned()))
 		.one(conn)
 		.await?
 		.ok_or("Reading list not found")?;
@@ -160,7 +160,7 @@ mod tests {
 			.append_query_results(vec![vec![get_reading_list_test_object()]])
 			.into_connection();
 
-		let reading_list = get_for_owner(&"123".to_string(), &mock_db, "42".to_string())
+		let reading_list = get_for_owner("123", &mock_db, "42".to_string())
 			.await
 			.unwrap();
 
@@ -175,8 +175,7 @@ mod tests {
 			.append_query_results(vec![vec![test_model]])
 			.into_connection();
 
-		let result =
-			get_for_owner(&"123".to_string(), &mock_db, "user".to_string()).await;
+		let result = get_for_owner("123", &mock_db, "user".to_string()).await;
 
 		assert!(result.is_err());
 	}

@@ -49,7 +49,7 @@ impl OPDSProgression {
 					let title = "Ebook Progress".to_string();
 					// TODO: Use resource URL for href, e.g. OEBPS/chapter008.xhtml ?
 					let locations =
-						data.session.percentage_completed.map(|progression| {
+						data.session.percentage_completed.map(|_progression| {
 							vec![OPDSProgressionLocation {
 								fragments: Some(vec![cfi]),
 								total_progression: percentage_completed,

@@ -6,7 +6,7 @@ use crate::{
 use async_trait::async_trait;
 use models::entity::{library, library_config};
 use notify::{Event, RecommendedWatcher, Watcher};
-use sea_orm::{prelude::*, QuerySelect};
+use sea_orm::prelude::*;
 use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 use std::sync::Arc;

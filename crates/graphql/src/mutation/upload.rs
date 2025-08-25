@@ -235,7 +235,7 @@ impl UploadMutation {
 	) -> Result<Series> {
 		let AuthContext { user, .. } = ctx.data()?;
 		let core = ctx.data::<CoreContext>()?;
-		let conn = core.conn.as_ref();
+		let _conn = core.conn.as_ref();
 
 		let series = series::ModelWithMetadata::find_for_user(user)
 			.filter(series::Column::Id.eq(id.to_string()))

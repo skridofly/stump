@@ -59,17 +59,17 @@ impl Related<super::user::Entity> for Entity {
 
 impl ActiveModelBehavior for ActiveModel {}
 
-fn get_reading_list_rbac_for_user(user_id: &String, minimum_role: i32) -> Condition {
+fn get_reading_list_rbac_for_user(user_id: &str, minimum_role: i32) -> Condition {
 	// A common condition that asserts there is a RBAC entry for the user that has a role
 	// greater than or equal to the minimum role:
 	// 1 for reader, 2 for collaborator, 3 for creator
 	let base_rbac = Condition::all()
-		.add(reading_list_rule::Column::UserId.eq(user_id.clone()))
+		.add(reading_list_rule::Column::UserId.eq(user_id.to_owned()))
 		.add(reading_list_rule::Column::Role.gte(minimum_role));
 
 	Condition::any()
 		// creator always has access
-		.add(Column::CreatingUserId.eq(user_id.clone()))
+		.add(Column::CreatingUserId.eq(user_id.to_owned()))
 		// condition where visibility is PUBLIC:
 		.add(
 			Condition::all()
@@ -122,7 +122,7 @@ mod tests {
 
 	#[test]
 	fn test_reading_list_rbac() {
-		let condition = get_reading_list_rbac_for_user(&"42".to_string(), 1);
+		let condition = get_reading_list_rbac_for_user("42", 1);
 		assert_eq!(
 			condition_to_string(&condition),
 			r#"SELECT  WHERE "#.to_string()

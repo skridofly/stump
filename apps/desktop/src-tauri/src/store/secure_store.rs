@@ -249,11 +249,11 @@ mod tests {
 		store
 			.set_tokens(
 				"homeserver".to_string(),
-				JwtTokenPair {
+				StoredTokens::Jwt(JwtTokenPair {
 					access_token: "definitely-real-token".to_string(),
 					refresh_token: Some("definitely-real-refresh-token".to_string()),
 					expires_at: (Utc::now() + chrono::Duration::days(1)).into(),
-				},
+				}),
 			)
 			.expect("Failed to set token");
 
@@ -263,6 +263,10 @@ mod tests {
 			.expect("Failed to get token")
 			.expect("Token missing");
 
+		let tokens = match tokens {
+			StoredTokens::Jwt(tokens) => tokens,
+			_ => panic!("Unexpected token type"),
+		};
 		assert_eq!(tokens.access_token, "definitely-real-token");
 		assert_eq!(
 			tokens.refresh_token,
@@ -279,11 +283,11 @@ mod tests {
 		store
 			.set_tokens(
 				"homeserver".to_string(),
-				JwtTokenPair {
+				StoredTokens::Jwt(JwtTokenPair {
 					access_token: "definitely-real-token".to_string(),
 					refresh_token: Some("definitely-real-refresh-token".to_string()),
 					expires_at: (Utc::now() + chrono::Duration::days(1)).into(),
-				},
+				}),
 			)
 			.expect("Failed to set token");
 		// Delete the token
@@ -308,11 +312,11 @@ mod tests {
 		store
 			.set_tokens(
 				"homeserver".to_string(),
-				JwtTokenPair {
+				StoredTokens::Jwt(JwtTokenPair {
 					access_token: "definitely-real-token".to_string(),
 					refresh_token: Some("definitely-real-refresh-token".to_string()),
 					expires_at: (Utc::now() + chrono::Duration::days(1)).into(),
-				},
+				}),
 			)
 			.expect("Failed to set token");
 
@@ -322,11 +326,11 @@ mod tests {
 		new_store
 			.set_tokens(
 				"homeserver".to_string(),
-				JwtTokenPair {
+				StoredTokens::Jwt(JwtTokenPair {
 					access_token: "new-definitely-real-token".to_string(),
 					refresh_token: Some("new-definitely-real-refresh-token".to_string()),
 					expires_at: (Utc::now() + chrono::Duration::days(1)).into(),
-				},
+				}),
 			)
 			.expect("Failed to set token");
 
@@ -336,6 +340,11 @@ mod tests {
 			.get_tokens("homeserver".to_string())
 			.expect("Failed to get token")
 			.expect("Token missing");
+
+		let tokens = match tokens {
+			StoredTokens::Jwt(tokens) => tokens,
+			_ => panic!("Unexpected token type"),
+		};
 
 		assert_eq!(tokens.access_token, "new-definitely-real-token");
 		assert_eq!(
@@ -348,13 +357,15 @@ mod tests {
 	#[test]
 	fn test_create_entry() {
 		let mut store = SecureStore::default();
-		assert!(store.records.is_empty());
+		assert!(store.credentials_records.is_empty());
+		assert!(store.token_records.is_empty());
 
 		store
 			.create_entry("homeserver".to_string())
 			.expect("Failed to create entry");
 
-		assert_eq!(store.records.len(), 1);
+		assert!(store.credentials_records.is_empty());
+		assert!(store.token_records.is_empty());
 	}
 
 	#[ignore]
@@ -367,7 +378,8 @@ mod tests {
 
 		store.clear();
 
-		assert!(store.records.is_empty());
+		assert!(store.credentials_records.is_empty());
+		assert!(store.token_records.is_empty());
 	}
 
 	#[ignore]
@@ -376,6 +388,7 @@ mod tests {
 		let store = SecureStore::init(vec!["homeserver".to_string()])
 			.expect("Failed to init store");
 
-		assert_eq!(store.records.len(), 1);
+		assert!(store.credentials_records.is_empty());
+		assert!(store.token_records.is_empty());
 	}
 }

@@ -338,7 +338,7 @@ async fn get_and_validate_recipients(
 async fn check_forbidden_recipients(
 	user: &AuthUser,
 	conn: &DatabaseConnection,
-	recipients: &Vec<String>,
+	recipients: &[String],
 ) -> Result<()> {
 	let forbidden_devices = registered_email_device::Entity::find()
 		.filter(registered_email_device::Column::Forbidden.eq(true))
@@ -924,7 +924,7 @@ mod tests {
 		let result = check_forbidden_recipients(
 			&user,
 			&conn,
-			&vec![
+			&[
 				"cslewis@gmail.com".to_string(),
 				"tolkien@gmail.com".to_string(),
 			],
@@ -945,7 +945,7 @@ mod tests {
 		let result = check_forbidden_recipients(
 			&user,
 			&conn,
-			&vec![
+			&[
 				"cslewis@gmail.com".to_string(),
 				"tolkien@gmail.com".to_string(),
 			],

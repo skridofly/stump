@@ -99,7 +99,7 @@ impl EmailerMutation {
 
 fn validate_send_permissions(
 	req_ctx: &AuthContext,
-	send_to: &Vec<EmailerSendTo>,
+	send_to: &[EmailerSendTo],
 ) -> Result<()> {
 	let is_sending_to_anonymous = send_to
 		.iter()

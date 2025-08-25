@@ -163,7 +163,11 @@ impl SeriesMutation {
 	}
 
 	// TODO(graphql): Implement mark_series_as_complete
-	async fn mark_series_as_complete(&self, ctx: &Context<'_>, id: ID) -> Result<Series> {
+	async fn mark_series_as_complete(
+		&self,
+		_ctx: &Context<'_>,
+		_id: ID,
+	) -> Result<Series> {
 		unimplemented!()
 	}
 

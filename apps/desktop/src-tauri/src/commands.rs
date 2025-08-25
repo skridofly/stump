@@ -6,8 +6,8 @@ use crate::{
 	store::{
 		app_store::AppStoreExt,
 		secure_store::{
-			CredentialStoreTokenState, JwtTokenPair, SecureStore, SecureStoreError,
-			StoredCredentials, StoredTokens,
+			CredentialStoreTokenState, SecureStore, SecureStoreError, StoredCredentials,
+			StoredTokens,
 		},
 		AppStore, StoreError,
 	},

@@ -63,7 +63,7 @@ pub fn ordering_impl(input: TokenStream) -> Result<TokenStream, syn::Error> {
 fn find_attr(
 	attr_name: &str,
 	attr_param: &str,
-	attrs: &Vec<syn::Attribute>,
+	attrs: &[syn::Attribute],
 ) -> Result<Option<String>, syn::Error> {
 	let mut name = None;
 	attrs
@@ -90,7 +90,7 @@ fn find_attr(
 
 const RAW_IDENTIFIER: &str = "r#";
 
-fn is_skip_column(attrs: &Vec<syn::Attribute>) -> bool {
+fn is_skip_column(attrs: &[syn::Attribute]) -> bool {
 	attrs
 		.iter()
 		.filter(|attr| attr.path().is_ident("ordering"))

@@ -4,8 +4,8 @@ use crate::object::{library::Library, media::Media, series::Series};
 
 #[derive(Debug, Union)]
 pub enum SmartListItemEntity {
-	Series(Series),
-	Library(Library),
+	Series(Box<Series>),
+	Library(Box<Library>),
 }
 
 #[derive(Debug, SimpleObject)]
