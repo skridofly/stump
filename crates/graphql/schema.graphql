@@ -1636,10 +1636,7 @@ enum ReadingMode {
 	CONTINUOUS_HORIZONTAL
 }
 
-type ReadingProgressOutput {
-	activeSession: ActiveReadingSession
-	finishedSession: FinishedReadingSession
-}
+union ReadingProgressOutput = ActiveReadingSession | FinishedReadingSession
 
 enum ReadingStatus {
 	READING

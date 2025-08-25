@@ -526,7 +526,14 @@ export default function EpubJsReader({ id, isIncognito }: EpubJsReaderProps) {
 		const updateProgress = (input: EpubProgressInput) => {
 			if (!book) return
 			if (isIncognito) return
-			if (ebook.media?.readProgress?.epubcfi === input.epubcfi) return
+			if (ebook.media?.readProgress?.epubcfi === input.epubcfi) {
+				console.warn('Epub progress is the same as the last update, skipping', {
+					payload: input,
+					existingProgress: ebook.media?.readProgress,
+				})
+				return
+			}
+
 			mutate({
 				id: ebook.media?.id || '',
 				input: {
@@ -580,6 +587,8 @@ export default function EpubJsReader({ id, isIncognito }: EpubJsReaderProps) {
 					percentage,
 				})
 			}
+		} else {
+			console.warn('Spine size is not available, cannot calculate progress')
 		}
 	}, [currentLocation, ebook, book, isIncognito, mutate])
 

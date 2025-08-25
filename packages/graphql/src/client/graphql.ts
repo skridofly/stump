@@ -2319,11 +2319,7 @@ export enum ReadingMode {
   Paged = 'PAGED'
 }
 
-export type ReadingProgressOutput = {
-  __typename?: 'ReadingProgressOutput';
-  activeSession?: Maybe<ActiveReadingSession>;
-  finishedSession?: Maybe<FinishedReadingSession>;
-};
+export type ReadingProgressOutput = ActiveReadingSession | FinishedReadingSession;
 
 export enum ReadingStatus {
   Abandoned = 'ABANDONED',
@@ -3119,7 +3115,7 @@ export type UpdateReadProgressionMutationVariables = Exact<{
 }>;
 
 
-export type UpdateReadProgressionMutation = { __typename?: 'Mutation', updateMediaProgress: { __typename: 'ReadingProgressOutput' } };
+export type UpdateReadProgressionMutation = { __typename?: 'Mutation', updateMediaProgress: { __typename: 'ActiveReadingSession' } | { __typename: 'FinishedReadingSession' } };
 
 export type BooksScreenQueryVariables = Exact<{
   pagination?: InputMaybe<Pagination>;
@@ -3381,7 +3377,7 @@ export type UpdateEpubProgressMutationVariables = Exact<{
 }>;
 
 
-export type UpdateEpubProgressMutation = { __typename?: 'Mutation', updateMediaProgress: { __typename: 'ReadingProgressOutput' } };
+export type UpdateEpubProgressMutation = { __typename?: 'Mutation', updateMediaProgress: { __typename: 'ActiveReadingSession' } | { __typename: 'FinishedReadingSession' } };
 
 export type CreateOrUpdateBookmarkMutationVariables = Exact<{
   input: BookmarkInput;
@@ -3502,7 +3498,7 @@ export type UpdateReadProgressMutationVariables = Exact<{
 }>;
 
 
-export type UpdateReadProgressMutation = { __typename?: 'Mutation', updateMediaProgress: { __typename: 'ReadingProgressOutput' } };
+export type UpdateReadProgressMutation = { __typename?: 'Mutation', updateMediaProgress: { __typename: 'ActiveReadingSession' } | { __typename: 'FinishedReadingSession' } };
 
 export type BookManagementSceneQueryVariables = Exact<{
   id: Scalars['ID']['input'];

@@ -1,4 +1,4 @@
-use async_graphql::{Context, Object, Result, SimpleObject, ID};
+use async_graphql::{Context, Object, Result, SimpleObject, Union, ID};
 use chrono::Utc;
 use models::{
 	entity::{
@@ -30,22 +30,10 @@ use crate::{
 	},
 };
 
-#[derive(Debug, SimpleObject)]
-pub struct ReadingProgressOutput {
-	active_session: Option<ActiveReadingSession>,
-	finished_session: Option<FinishedReadingSession>,
-}
-
-impl ReadingProgressOutput {
-	pub fn new(
-		active_session: Option<ActiveReadingSession>,
-		finished_session: Option<FinishedReadingSession>,
-	) -> Self {
-		Self {
-			active_session,
-			finished_session,
-		}
-	}
+#[derive(Debug, Union)]
+pub enum ReadingProgressOutput {
+	Active(ActiveReadingSession),
+	Finished(FinishedReadingSession),
 }
 
 #[derive(Default)]
@@ -292,13 +280,19 @@ impl MediaMutation {
 			MediaProgressInput::Paged(input) => {
 				active_session.page = Set(Some(input.page));
 				active_session.elapsed_seconds = Set(input.elapsed_seconds);
-				is_complete =
-					is_progress_complete(id.to_string(), Some(input.page), conn).await?;
+
+				let book_pages = get_book_pages(id.to_string(), conn).await?;
+				is_complete = input.page >= book_pages;
+				active_session.percentage_completed =
+					Set(Some(compute_page_based_percentage(input.page, book_pages)));
 			},
 		}
 
 		let on_conflict_update_cols = chain_optional_iter(
-			[reading_session::Column::UpdatedAt],
+			[
+				reading_session::Column::UpdatedAt,
+				reading_session::Column::PercentageCompleted,
+			],
 			[
 				(matches!(input, MediaProgressInput::Epub(_)))
 					.then(|| reading_session::Column::Epubcfi),
@@ -320,10 +314,7 @@ impl MediaMutation {
 			.await?;
 
 		if !is_complete {
-			Ok(ReadingProgressOutput::new(
-				Some(active_session.into()),
-				None,
-			))
+			Ok(ReadingProgressOutput::Active(active_session.into()))
 		} else {
 			let finished_reading_session = finished_reading_session::ActiveModel {
 				user_id: Set(user.id.clone()),
@@ -332,6 +323,7 @@ impl MediaMutation {
 					.updated_at
 					.unwrap_or_else(|| chrono::Utc::now().into())),
 				completed_at: Set(chrono::Utc::now().into()),
+				elapsed_seconds: Set(active_session.elapsed_seconds),
 				..Default::default()
 			};
 
@@ -344,9 +336,8 @@ impl MediaMutation {
 			.await?;
 			txn.commit().await?;
 
-			Ok(ReadingProgressOutput::new(
-				None,
-				Some(finished_reading_session.into()),
+			Ok(ReadingProgressOutput::Finished(
+				finished_reading_session.into(),
 			))
 		}
 	}
@@ -461,21 +452,24 @@ async fn set_completed_media(
 	Ok(finished_reading_session)
 }
 
-async fn is_progress_complete(
-	media_id: String,
-	page: Option<i32>,
-	conn: &DatabaseConnection,
-) -> Result<bool> {
-	if let Some(page) = page {
-		let pages: i32 = media::Entity::find_by_id(media_id)
-			.select_only()
-			.columns(vec![media::Column::Pages])
-			.into_tuple()
-			.one(conn)
-			.await?
-			.ok_or("Media not found")?;
-		Ok(page >= pages)
+fn compute_page_based_percentage(current_page: i32, pages: i32) -> Decimal {
+	if pages <= 0 {
+		Decimal::new(0, 0)
 	} else {
-		Ok(false)
+		let percentage =
+			Decimal::new(current_page as i64, 0) / Decimal::new(pages as i64, 0);
+		// Cannot be negative and cannot be more than 100%
+		percentage.clamp(Decimal::new(0, 0), Decimal::new(100, 0))
 	}
+}
+
+async fn get_book_pages(book_id: String, conn: &DatabaseConnection) -> Result<i32> {
+	let pages: i32 = media::Entity::find_by_id(book_id)
+		.select_only()
+		.columns(vec![media::Column::Pages])
+		.into_tuple()
+		.one(conn)
+		.await?
+		.ok_or("Media not found")?;
+	Ok(pages)
 }
