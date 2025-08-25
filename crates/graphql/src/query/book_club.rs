@@ -40,4 +40,19 @@ impl BookClubQuery {
 
 		Ok(model.map(BookClub::from))
 	}
+
+	async fn book_club_by_slug(
+		&self,
+		ctx: &Context<'_>,
+		slug: String,
+	) -> Result<Option<BookClub>> {
+		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
+		let conn = ctx.data::<CoreContext>()?.conn.as_ref();
+
+		let model = book_club::Entity::find_by_slug_and_user(slug.as_ref(), user)
+			.one(conn)
+			.await?;
+
+		Ok(model.map(BookClub::from))
+	}
 }

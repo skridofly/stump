@@ -26,6 +26,8 @@ impl BookClubMutation {
 		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
 		let conn = ctx.data::<CoreContext>()?.conn.as_ref();
 
+		// input.validate()?;
+
 		let txn = conn.begin().await?;
 
 		let (club, member) = input.into_active_model(user);

@@ -1,5 +1,6 @@
 import { cn } from '@stump/components'
-import { BookClub, Media, User } from '@stump/sdk'
+import { graphql } from '@stump/graphql'
+import { AuthUser } from '@stump/sdk'
 import dayjs from 'dayjs'
 import { Suspense, useMemo } from 'react'
 import { Navigate, Outlet, useLocation, useParams } from 'react-router'
@@ -16,8 +17,21 @@ import BookClubNavigation from './BookClubNavigation'
 import { BookClubSettingsSideBar } from './tabs/settings'
 import { routeGroups } from './tabs/settings/routes'
 
+const query = graphql(`
+	query BookClubLayout($slug: String!) {
+		bookClubBySlug(slug: $slug) {
+			id
+			name
+			slug
+			description
+			isPrivate
+			roleSpec
+		}
+	}
+`)
+
 export default function BookClubLayout() {
-	const { id } = useParams<{ id: string }>()
+	const { slug } = useParams<{ slug: string }>()
 
 	// const { bookClub, isLoading } = useBookClubQuery(id || '', {
 	// 	enabled: !!id,
@@ -111,7 +125,7 @@ export default function BookClubLayout() {
 	)
 }
 
-const mockBookClub: BookClub = {
+const mockBookClub = {
 	created_at: '2020-12-01T00:00:00.000Z',
 	description: 'A book club for fans of the OFMD series. All you can read pirate fiction!',
 	emoji: null,
@@ -132,12 +146,12 @@ const mockBookClub: BookClub = {
 			private_membership: false,
 			role: 'CREATOR',
 			user: {
-				avatar_url:
+				avatarUrl:
 					'https://cdn.vox-cdn.com/thumbor/16Dsgtyko77dGwc08YBk39h-Qj8=/1400x1400/filters:format(png)/cdn.vox-cdn.com/uploads/chorus_asset/file/24979372/Smile.png',
 				id: '1',
-				is_locked: false,
+				isLocked: false,
 				username: 'thekraken',
-			} as User,
+			} as AuthUser,
 		},
 	],
 	name: 'OFMD Fan Club',

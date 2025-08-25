@@ -141,7 +141,9 @@ export type BookClub = {
   isPrivate: Scalars['Boolean']['output'];
   members: Array<BookClubMember>;
   name: Scalars['String']['output'];
+  roleSpec: Scalars['JSON']['output'];
   schedule?: Maybe<BookClubSchedule>;
+  slug: Scalars['String']['output'];
 };
 
 export type BookClubBook = BookClubExternalBook | BookClubInternalBook;
@@ -267,9 +269,11 @@ export type CoreJobOutput = ExternalJobOutput | LibraryScanOutput | SeriesScanOu
 export type CreateBookClubInput = {
   creatorDisplayName?: InputMaybe<Scalars['String']['input']>;
   creatorHideProgress: Scalars['Boolean']['input'];
+  description?: InputMaybe<Scalars['String']['input']>;
   isPrivate?: Scalars['Boolean']['input'];
   memberRoleSpec?: InputMaybe<Scalars['JSON']['input']>;
   name: Scalars['String']['input'];
+  slug?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type CreateBookClubMemberInput = {
@@ -2038,6 +2042,7 @@ export type Query = {
   apiKeyById: Apikey;
   apiKeys: Array<Apikey>;
   bookClubById?: Maybe<BookClub>;
+  bookClubBySlug?: Maybe<BookClub>;
   bookClubs: Array<BookClub>;
   /** Get all bookmarks for a single epub by its media ID */
   bookmarksByMediaId: Array<Bookmark>;
@@ -2119,6 +2124,11 @@ export type QueryApiKeyByIdArgs = {
 
 export type QueryBookClubByIdArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type QueryBookClubBySlugArgs = {
+  slug: Scalars['String']['input'];
 };
 
 
@@ -3534,6 +3544,25 @@ export type BookThumbnailSelectorUploadMutationVariables = Exact<{
 
 
 export type BookThumbnailSelectorUploadMutation = { __typename?: 'Mutation', uploadMediaThumbnail: { __typename?: 'Media', id: string, thumbnail: { __typename?: 'ImageRef', url: string } } };
+
+export type BookClubLayoutQueryVariables = Exact<{
+  slug: Scalars['String']['input'];
+}>;
+
+
+export type BookClubLayoutQuery = { __typename?: 'Query', bookClubBySlug?: { __typename?: 'BookClub', id: string, name: string, slug: string, description?: string | null, isPrivate: boolean, roleSpec: any } | null };
+
+export type CreateBookClubFormQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type CreateBookClubFormQuery = { __typename?: 'Query', bookClubs: Array<{ __typename?: 'BookClub', name: string, slug: string }> };
+
+export type CreateBookClubSceneMutationVariables = Exact<{
+  input: CreateBookClubInput;
+}>;
+
+
+export type CreateBookClubSceneMutation = { __typename?: 'Mutation', createBookClub: { __typename?: 'BookClub', id: string, slug: string } };
 
 export type BookSearchSceneQueryVariables = Exact<{
   filter: MediaFilterInput;
@@ -5409,6 +5438,34 @@ export const BookThumbnailSelectorUploadDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<BookThumbnailSelectorUploadMutation, BookThumbnailSelectorUploadMutationVariables>;
+export const BookClubLayoutDocument = new TypedDocumentString(`
+    query BookClubLayout($slug: String!) {
+  bookClubBySlug(slug: $slug) {
+    id
+    name
+    slug
+    description
+    isPrivate
+    roleSpec
+  }
+}
+    `) as unknown as TypedDocumentString<BookClubLayoutQuery, BookClubLayoutQueryVariables>;
+export const CreateBookClubFormDocument = new TypedDocumentString(`
+    query CreateBookClubForm {
+  bookClubs {
+    name
+    slug
+  }
+}
+    `) as unknown as TypedDocumentString<CreateBookClubFormQuery, CreateBookClubFormQueryVariables>;
+export const CreateBookClubSceneDocument = new TypedDocumentString(`
+    mutation CreateBookClubScene($input: CreateBookClubInput!) {
+  createBookClub(input: $input) {
+    id
+    slug
+  }
+}
+    `) as unknown as TypedDocumentString<CreateBookClubSceneMutation, CreateBookClubSceneMutationVariables>;
 export const BookSearchSceneDocument = new TypedDocumentString(`
     query BookSearchScene($filter: MediaFilterInput!, $orderBy: [MediaOrderBy!]!, $pagination: Pagination!) {
   media(filter: $filter, orderBy: $orderBy, pagination: $pagination) {

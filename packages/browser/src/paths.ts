@@ -28,8 +28,8 @@ type DocTopic = 'access-control' | 'features/book-clubs'
 type BookClubTab = 'overview' | 'members' | 'discussion' | 'settings'
 
 const pathsInternal = {
-	bookClub: (id: string, tab?: BookClubTab) => `/book-clubs/${id}${tab ? `/${tab}` : ''}`,
-	bookClubCreate: () => '/book-clubs/create',
+	bookClub: (id: string, tab?: BookClubTab) => `/clubs/${id}${tab ? `/${tab}` : ''}`,
+	bookClubCreate: () => '/clubs/create',
 	bookClubDiscussion: (id: string, discussionId?: string) => {
 		const url = pathsInternal.bookClub(id, 'discussion')
 		if (discussionId?.length) {
@@ -46,7 +46,7 @@ const pathsInternal = {
 	},
 	bookClubScheduler: (id: string) => pathsInternal.bookClub(id, 'settings') + '/scheduler',
 	bookClubSettings: (id: string) => pathsInternal.bookClub(id, 'settings'),
-	bookClubs: () => '/book-clubs',
+	bookClubs: () => '/clubs',
 	bookManagement: (id: string) => `/books/${id}/manage`,
 	bookOverview: (id: string) => `/books/${id}`,
 	bookReader: (
