@@ -19,8 +19,8 @@ pub struct SmartListViewColumn {
 	pub position: i32,
 }
 
-#[serde(rename_all = "camelCase")]
 #[derive(Debug, Clone, SimpleObject, InputObject, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 #[graphql(input_name = "SmartListViewConfigInput")]
 pub struct SmartListViewConfig {
 	pub book_columns: Vec<SmartListViewColumn>,

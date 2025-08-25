@@ -2,9 +2,7 @@ use async_graphql::{InputObject, InputType, OneofObject};
 use filter_gen::IntoFilter;
 use models::shared::enums::{FileStatus, ReadingStatus};
 use sea_orm::{
-	prelude::{DateTimeWithTimeZone, *},
-	sea_query::ConditionExpression,
-	Condition, Value,
+	prelude::DateTimeWithTimeZone, sea_query::ConditionExpression, Condition, Value,
 };
 use serde::{Deserialize, Serialize};
 
@@ -172,7 +170,7 @@ mod tests {
 	use super::*;
 	use models::entity::media;
 	use pretty_assertions::assert_eq;
-	use sea_orm::{sea_query::SqliteQueryBuilder, QuerySelect, QueryTrait};
+	use sea_orm::{prelude::*, sea_query::SqliteQueryBuilder, QuerySelect, QueryTrait};
 
 	#[test]
 	fn test_string_like_any_of() {

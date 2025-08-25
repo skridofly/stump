@@ -79,6 +79,9 @@ impl ActiveModelBehavior for ActiveModel {
 			}
 			self.ms_elapsed = Set(0);
 			self.created_at = Set(DateTimeWithTimeZone::from(Utc::now()));
+			if self.status.is_not_set() {
+				self.status = Set(JobStatus::Queued);
+			}
 		}
 
 		Ok(self)

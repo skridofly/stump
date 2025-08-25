@@ -1,6 +1,5 @@
 use async_graphql::InputObject;
 use models::entity::log;
-use sea_orm::prelude::*;
 
 use super::{apply_string_filter, IntoFilter, StringLikeFilter};
 

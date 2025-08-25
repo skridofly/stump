@@ -1,6 +1,6 @@
 use async_graphql::InputObject;
 use models::entity::registered_email_device;
-use sea_orm::{prelude::*, ActiveModelTrait, NotSet, Set};
+use sea_orm::{NotSet, Set};
 
 /// Input object for creating or updating an email device
 #[derive(InputObject)]

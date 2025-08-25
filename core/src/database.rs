@@ -46,6 +46,12 @@ pub async fn connect(config: &StumpConfig) -> Result<DatabaseConnection, CoreErr
 	Ok(connection)
 }
 
+pub async fn connect_at(path: &str) -> Result<DatabaseConnection, CoreError> {
+	let connection = sea_orm::Database::connect(path).await?;
+	Migrator::up(&connection, None).await?;
+	Ok(connection)
+}
+
 #[derive(Deserialize, Serialize, Debug, Default)]
 pub struct CountQueryReturn {
 	pub count: i64,

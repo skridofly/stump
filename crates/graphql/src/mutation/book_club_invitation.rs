@@ -161,7 +161,6 @@ fn create_member_active_model(
 		role: Set(invitation.role),
 		hide_progress: Set(input.private_membership.unwrap_or(false)),
 		is_creator: Set(false),
-		..Default::default()
 	}
 }
 

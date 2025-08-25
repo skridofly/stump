@@ -147,10 +147,10 @@ impl APIError {
 			APIError::NotImplemented => StatusCode::NOT_IMPLEMENTED,
 			APIError::ServiceUnavailable(_) => StatusCode::SERVICE_UNAVAILABLE,
 			APIError::BadGateway(_) => StatusCode::BAD_GATEWAY,
-			APIError::DbError(error) => match error {
-				sea_orm::error::DbErr::RecordNotFound(_) => StatusCode::NOT_FOUND,
-				_ => StatusCode::INTERNAL_SERVER_ERROR,
+			APIError::DbError(sea_orm::error::DbErr::RecordNotFound(_)) => {
+				StatusCode::NOT_FOUND
 			},
+			APIError::DbError(_) => StatusCode::INTERNAL_SERVER_ERROR,
 			APIError::Redirect(_) => StatusCode::TEMPORARY_REDIRECT,
 			_ => StatusCode::INTERNAL_SERVER_ERROR,
 		}
