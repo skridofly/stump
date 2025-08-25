@@ -133,6 +133,7 @@ export type AttachmentMeta = {
 export type BookClub = {
   __typename?: 'BookClub';
   createdAt: Scalars['DateTime']['output'];
+  creator: BookClubMember;
   currentBook?: Maybe<BookClubBook>;
   description?: Maybe<Scalars['String']['output']>;
   emoji?: Maybe<Scalars['String']['output']>;
@@ -140,6 +141,8 @@ export type BookClub = {
   invitations: Array<BookClubInvitation>;
   isPrivate: Scalars['Boolean']['output'];
   members: Array<BookClubMember>;
+  membersCount: Scalars['Int']['output'];
+  membership?: Maybe<BookClubMember>;
   name: Scalars['String']['output'];
   roleSpec: Scalars['JSON']['output'];
   schedule?: Maybe<BookClubSchedule>;
@@ -200,6 +203,7 @@ export type BookClubInvitationResponseInput = {
 
 export type BookClubMember = {
   __typename?: 'BookClubMember';
+  avatarUrl?: Maybe<Scalars['String']['output']>;
   bookClubId: Scalars['String']['output'];
   displayName?: Maybe<Scalars['String']['output']>;
   hideProgress: Scalars['Boolean']['output'];
@@ -207,7 +211,9 @@ export type BookClubMember = {
   isCreator: Scalars['Boolean']['output'];
   privateMembership: Scalars['Boolean']['output'];
   role: BookClubMemberRole;
+  user: User;
   userId: Scalars['String']['output'];
+  username: Scalars['String']['output'];
 };
 
 export type BookClubMemberInput = {
@@ -226,6 +232,7 @@ export enum BookClubMemberRole {
 
 export type BookClubSchedule = {
   __typename?: 'BookClubSchedule';
+  activeBooks: Array<BookClubBook>;
   bookClubId: Scalars['String']['output'];
   books: Array<BookClubBook>;
   defaultIntervalDays?: Maybe<Scalars['Int']['output']>;
@@ -1227,6 +1234,7 @@ export type Mutation = {
   createApiKey: CreatedApiKey;
   createBookClub: BookClub;
   createBookClubInvitation: BookClubInvitation;
+  /** Creates a new member in the book club */
   createBookClubMember: BookClubMember;
   createBookClubSchedule: BookClub;
   createEmailDevice: RegisteredEmailDevice;
@@ -1263,6 +1271,7 @@ export type Mutation = {
   createTags: Array<Tag>;
   createUser: User;
   deleteApiKey: Apikey;
+  deleteBookClub: BookClub;
   /** Delete a bookmark by epubcfi. The user must be the owner of the bookmark. */
   deleteBookmark: Bookmark;
   deleteEmailDevice: RegisteredEmailDevice;
@@ -1305,9 +1314,13 @@ export type Mutation = {
   favoriteMedia: Media;
   favoriteSeries: Series;
   generateLibraryThumbnails: Scalars['Boolean']['output'];
+  /** Deletes the membership of the caller to the target book club */
+  leaveBookClub: BookClubMember;
   markMediaAsComplete?: Maybe<FinishedReadingSessionModel>;
   markSeriesAsComplete: Series;
   patchEmailDevice: Scalars['Int']['output'];
+  /** Removes a member from the book club */
+  removeBookClubMember: BookClubMember;
   respondToBookClubInvitation: BookClubInvitation;
   /**
    * Enqueue a scan job for a library. This will index the filesystem from the library's root path
@@ -1510,6 +1523,11 @@ export type MutationDeleteApiKeyArgs = {
 };
 
 
+export type MutationDeleteBookClubArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
 export type MutationDeleteBookmarkArgs = {
   epubcfi: Scalars['String']['input'];
 };
@@ -1626,6 +1644,11 @@ export type MutationGenerateLibraryThumbnailsArgs = {
 };
 
 
+export type MutationLeaveBookClubArgs = {
+  bookClubId: Scalars['ID']['input'];
+};
+
+
 export type MutationMarkMediaAsCompleteArgs = {
   id: Scalars['ID']['input'];
   isComplete: Scalars['Boolean']['input'];
@@ -1641,6 +1664,12 @@ export type MutationMarkSeriesAsCompleteArgs = {
 export type MutationPatchEmailDeviceArgs = {
   id: Scalars['Int']['input'];
   input: EmailDeviceInput;
+};
+
+
+export type MutationRemoveBookClubMemberArgs = {
+  bookClubId: Scalars['ID']['input'];
+  memberId: Scalars['ID']['input'];
 };
 
 
@@ -2041,7 +2070,7 @@ export type Query = {
   __typename?: 'Query';
   apiKeyById: Apikey;
   apiKeys: Array<Apikey>;
-  bookClubById?: Maybe<BookClub>;
+  bookClubById: BookClub;
   bookClubBySlug?: Maybe<BookClub>;
   bookClubs: Array<BookClub>;
   /** Get all bookmarks for a single epub by its media ID */
@@ -2597,6 +2626,7 @@ export type SmartList = {
   id: Scalars['String']['output'];
   joiner: SmartListJoiner;
   name: Scalars['String']['output'];
+  thumbnail: ImageRef;
   views: Array<SmartListView>;
   visibility: EntityVisibility;
 };
@@ -3258,7 +3288,7 @@ export type StackedSeriesThumbnailsQuery = { __typename?: 'Query', series: { __t
 export type StackedSmartListThumbnailsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type StackedSmartListThumbnailsQuery = { __typename?: 'Query', smartLists: Array<{ __typename?: 'SmartList', id: string }> };
+export type StackedSmartListThumbnailsQuery = { __typename?: 'Query', smartLists: Array<{ __typename?: 'SmartList', id: string, thumbnail: { __typename?: 'ImageRef', url: string } }> };
 
 export type UseFavoriteBookMutationVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -3274,6 +3304,24 @@ export type TagSelectQueryQueryVariables = Exact<{ [key: string]: never; }>;
 export type TagSelectQueryQuery = { __typename?: 'Query', tags: Array<{ __typename?: 'Tag', id: number, name: string }> };
 
 export type BookCardFragment = { __typename?: 'Media', id: string, resolvedName: string, extension: string, pages: number, size: number, status: FileStatus, thumbnail: { __typename?: 'ImageRef', url: string }, readProgress?: { __typename?: 'ActiveReadingSession', percentageCompleted?: any | null, epubcfi?: string | null, page?: number | null } | null, readHistory: Array<{ __typename: 'FinishedReadingSession', completedAt: any }> } & { ' $fragmentName'?: 'BookCardFragment' };
+
+export type BookSearchOverlayQueryVariables = Exact<{
+  pagination?: InputMaybe<Pagination>;
+  filter: MediaFilterInput;
+}>;
+
+
+export type BookSearchOverlayQuery = { __typename?: 'Query', media: { __typename?: 'PaginatedMediaResponse', nodes: Array<(
+      { __typename?: 'Media', id: string }
+      & { ' $fragmentRefs'?: { 'BookCardFragment': BookCardFragment } }
+    )>, pageInfo: { __typename: 'CursorPaginationInfo', currentCursor?: string | null, nextCursor?: string | null, limit: number } | { __typename: 'OffsetPaginationInfo' } } };
+
+export type DeleteBookClubConfirmationMutationVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type DeleteBookClubConfirmationMutation = { __typename?: 'Mutation', deleteBookClub: { __typename?: 'BookClub', id: string } };
 
 export type MediaAtPathQueryVariables = Exact<{
   path: Scalars['String']['input'];
@@ -3337,7 +3385,7 @@ export type SideBarQueryQuery = { __typename?: 'Query', me: { __typename?: 'User
 export type BookClubSideBarSectionQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type BookClubSideBarSectionQuery = { __typename?: 'Query', bookClubs: Array<{ __typename?: 'BookClub', id: string, name: string, emoji?: string | null, members: Array<{ __typename?: 'BookClubMember', id: string, userId: string, role: BookClubMemberRole }> }> };
+export type BookClubSideBarSectionQuery = { __typename?: 'Query', bookClubs: Array<{ __typename?: 'BookClub', id: string, name: string, slug: string, emoji?: string | null, members: Array<{ __typename?: 'BookClubMember', id: string, userId: string, role: BookClubMemberRole }> }> };
 
 export type UpdateLibraryEmojiMutationVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -3550,7 +3598,12 @@ export type BookClubLayoutQueryVariables = Exact<{
 }>;
 
 
-export type BookClubLayoutQuery = { __typename?: 'Query', bookClubBySlug?: { __typename?: 'BookClub', id: string, name: string, slug: string, description?: string | null, isPrivate: boolean, roleSpec: any } | null };
+export type BookClubLayoutQuery = { __typename?: 'Query', bookClubBySlug?: { __typename?: 'BookClub', id: string, name: string, slug: string, description?: string | null, isPrivate: boolean, roleSpec: any, membersCount: number, createdAt: any, creator: { __typename?: 'BookClubMember', id: string, displayName?: string | null, avatarUrl?: string | null }, membership?: { __typename: 'BookClubMember', role: BookClubMemberRole, isCreator: boolean, avatarUrl?: string | null } | null, schedule?: { __typename?: 'BookClubSchedule', id: number, defaultIntervalDays?: number | null } | null } | null };
+
+export type UserBookClubsSceneQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type UserBookClubsSceneQuery = { __typename?: 'Query', bookClubs: Array<{ __typename?: 'BookClub', id: string, name: string, slug: string, description?: string | null, membersCount: number, schedule?: { __typename?: 'BookClubSchedule', activeBooks: Array<{ __typename: 'BookClubExternalBook' } | { __typename: 'BookClubInternalBook' }> } | null }> };
 
 export type CreateBookClubFormQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -3563,6 +3616,26 @@ export type CreateBookClubSceneMutationVariables = Exact<{
 
 
 export type CreateBookClubSceneMutation = { __typename?: 'Mutation', createBookClub: { __typename?: 'BookClub', id: string, slug: string } };
+
+export type BookClubBasicSettingsSceneQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type BookClubBasicSettingsSceneQuery = { __typename?: 'Query', bookClubs: Array<{ __typename?: 'BookClub', id: string, name: string, slug: string }> };
+
+export type BookClubMembersTableQueryVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type BookClubMembersTableQuery = { __typename?: 'Query', bookClubById: { __typename?: 'BookClub', id: string, members: Array<{ __typename?: 'BookClubMember', id: string, avatarUrl?: string | null, isCreator: boolean, displayName?: string | null, role: BookClubMemberRole, userId: string }> } };
+
+export type RemoveBookClubMemberMutationVariables = Exact<{
+  bookClubId: Scalars['ID']['input'];
+  memberId: Scalars['ID']['input'];
+}>;
+
+
+export type RemoveBookClubMemberMutation = { __typename?: 'Mutation', removeBookClubMember: { __typename?: 'BookClubMember', id: string } };
 
 export type BookSearchSceneQueryVariables = Exact<{
   filter: MediaFilterInput;
@@ -4890,6 +4963,9 @@ export const StackedSmartListThumbnailsDocument = new TypedDocumentString(`
     query StackedSmartListThumbnails {
   smartLists {
     id
+    thumbnail {
+      url
+    }
   }
 }
     `) as unknown as TypedDocumentString<StackedSmartListThumbnailsQuery, StackedSmartListThumbnailsQueryVariables>;
@@ -4909,6 +4985,50 @@ export const TagSelectQueryDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<TagSelectQueryQuery, TagSelectQueryQueryVariables>;
+export const BookSearchOverlayDocument = new TypedDocumentString(`
+    query BookSearchOverlay($pagination: Pagination, $filter: MediaFilterInput!) {
+  media(pagination: $pagination, filter: $filter) {
+    nodes {
+      id
+      ...BookCard
+    }
+    pageInfo {
+      __typename
+      ... on CursorPaginationInfo {
+        currentCursor
+        nextCursor
+        limit
+      }
+    }
+  }
+}
+    fragment BookCard on Media {
+  id
+  resolvedName
+  extension
+  pages
+  size
+  status
+  thumbnail {
+    url
+  }
+  readProgress {
+    percentageCompleted
+    epubcfi
+    page
+  }
+  readHistory {
+    __typename
+    completedAt
+  }
+}`) as unknown as TypedDocumentString<BookSearchOverlayQuery, BookSearchOverlayQueryVariables>;
+export const DeleteBookClubConfirmationDocument = new TypedDocumentString(`
+    mutation DeleteBookClubConfirmation($id: ID!) {
+  deleteBookClub(id: $id) {
+    id
+  }
+}
+    `) as unknown as TypedDocumentString<DeleteBookClubConfirmationMutation, DeleteBookClubConfirmationMutationVariables>;
 export const MediaAtPathDocument = new TypedDocumentString(`
     query MediaAtPath($path: String!) {
   mediaByPath(path: $path) {
@@ -5004,6 +5124,7 @@ export const BookClubSideBarSectionDocument = new TypedDocumentString(`
   bookClubs {
     id
     name
+    slug
     emoji
     members {
       id
@@ -5447,9 +5568,42 @@ export const BookClubLayoutDocument = new TypedDocumentString(`
     description
     isPrivate
     roleSpec
+    creator {
+      id
+      displayName
+      avatarUrl
+    }
+    membersCount
+    membership {
+      role
+      isCreator
+      avatarUrl
+      __typename
+    }
+    schedule {
+      id
+      defaultIntervalDays
+    }
+    createdAt
   }
 }
     `) as unknown as TypedDocumentString<BookClubLayoutQuery, BookClubLayoutQueryVariables>;
+export const UserBookClubsSceneDocument = new TypedDocumentString(`
+    query UserBookClubsScene {
+  bookClubs(all: false) {
+    id
+    name
+    slug
+    description
+    membersCount
+    schedule {
+      activeBooks {
+        __typename
+      }
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<UserBookClubsSceneQuery, UserBookClubsSceneQueryVariables>;
 export const CreateBookClubFormDocument = new TypedDocumentString(`
     query CreateBookClubForm {
   bookClubs {
@@ -5466,6 +5620,37 @@ export const CreateBookClubSceneDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<CreateBookClubSceneMutation, CreateBookClubSceneMutationVariables>;
+export const BookClubBasicSettingsSceneDocument = new TypedDocumentString(`
+    query BookClubBasicSettingsScene {
+  bookClubs(all: true) {
+    id
+    name
+    slug
+  }
+}
+    `) as unknown as TypedDocumentString<BookClubBasicSettingsSceneQuery, BookClubBasicSettingsSceneQueryVariables>;
+export const BookClubMembersTableDocument = new TypedDocumentString(`
+    query BookClubMembersTable($id: ID!) {
+  bookClubById(id: $id) {
+    id
+    members {
+      id
+      avatarUrl
+      isCreator
+      displayName
+      role
+      userId
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<BookClubMembersTableQuery, BookClubMembersTableQueryVariables>;
+export const RemoveBookClubMemberDocument = new TypedDocumentString(`
+    mutation RemoveBookClubMember($bookClubId: ID!, $memberId: ID!) {
+  removeBookClubMember(bookClubId: $bookClubId, memberId: $memberId) {
+    id
+  }
+}
+    `) as unknown as TypedDocumentString<RemoveBookClubMemberMutation, RemoveBookClubMemberMutationVariables>;
 export const BookSearchSceneDocument = new TypedDocumentString(`
     query BookSearchScene($filter: MediaFilterInput!, $orderBy: [MediaOrderBy!]!, $pagination: Pagination!) {
   media(filter: $filter, orderBy: $orderBy, pagination: $pagination) {

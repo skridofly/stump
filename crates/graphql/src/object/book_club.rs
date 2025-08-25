@@ -90,7 +90,38 @@ impl BookClub {
 			.collect())
 	}
 
-	async fn role_spec(&self, ctx: &Context<'_>) -> Result<Json<BookClubMemberRoleSpec>> {
+	async fn members_count(&self, ctx: &Context<'_>) -> Result<u64> {
+		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
+		let conn = ctx.data::<CoreContext>()?.conn.as_ref();
+		let count =
+			book_club_member::Entity::find_members_accessible_to_user_for_book_club_id(
+				user,
+				&self.model.id.clone(),
+			)
+			.count(conn)
+			.await?;
+
+		Ok(count)
+	}
+
+	async fn membership(&self, ctx: &Context<'_>) -> Result<Option<BookClubMember>> {
+		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
+		let conn = ctx.data::<CoreContext>()?.conn.as_ref();
+
+		let membership = book_club_member::Entity::find()
+			.filter(
+				book_club_member::Column::BookClubId
+					.eq(self.model.id.clone())
+					.and(book_club_member::Column::UserId.eq(user.id.clone())),
+			)
+			.into_model::<book_club_member::Model>()
+			.one(conn)
+			.await?;
+
+		Ok(membership.map(BookClubMember::from))
+	}
+
+	async fn role_spec(&self) -> Result<Json<BookClubMemberRoleSpec>> {
 		let spec = self.model.member_role_spec.clone().unwrap_or_default();
 		Ok(Json(spec))
 	}

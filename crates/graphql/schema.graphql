@@ -104,9 +104,12 @@ type BookClub {
 	isPrivate: Boolean!
 	createdAt: DateTime!
 	emoji: String
+	creator: BookClubMember!
 	currentBook: BookClubBook
 	invitations: [BookClubInvitation!]!
 	members: [BookClubMember!]!
+	membersCount: Int!
+	membership: BookClubMember
 	roleSpec: JSON!
 	schedule: BookClubSchedule
 }
@@ -170,6 +173,9 @@ type BookClubMember {
 	role: BookClubMemberRole!
 	userId: String!
 	bookClubId: String!
+	avatarUrl: String
+	username: String!
+	user: User!
 }
 
 input BookClubMemberInput {
@@ -190,6 +196,7 @@ type BookClubSchedule {
 	id: Int!
 	defaultIntervalDays: Int
 	bookClubId: String!
+	activeBooks: [BookClubBook!]!
 	books: [BookClubBook!]!
 }
 
@@ -1150,9 +1157,15 @@ type Mutation {
 	deleteSmartList(id: ID!): SmartList!
 	createBookClub(input: CreateBookClubInput!): BookClub!
 	updateBookClub(id: ID!, input: UpdateBookClubInput!): BookClub!
+	deleteBookClub(id: ID!): BookClub!
 	createBookClubInvitation(id: ID!, input: BookClubInvitationInput!): BookClubInvitation!
 	respondToBookClubInvitation(id: ID!, input: BookClubInvitationResponseInput!): BookClubInvitation!
+	"Creates a new member in the book club"
 	createBookClubMember(bookClubId: ID!, input: CreateBookClubMemberInput!): BookClubMember!
+	"Removes a member from the book club"
+	removeBookClubMember(bookClubId: ID!, memberId: ID!): BookClubMember!
+	"Deletes the membership of the caller to the target book club"
+	leaveBookClub(bookClubId: ID!): BookClubMember!
 	createBookClubSchedule(id: ID!, input: CreateBookClubScheduleInput!): BookClub!
 	addBooksToBookClubSchedule(id: ID!, books: [CreateBookClubScheduleBook!]!): BookClub!
 	cancelJob(id: ID!): Boolean!
@@ -1529,7 +1542,7 @@ type Query {
 	apiKeys: [Apikey!]!
 	apiKeyById(id: Int!): Apikey!
 	bookClubs(all: Boolean = null): [BookClub!]!
-	bookClubById(id: ID!): BookClub
+	bookClubById(id: ID!): BookClub!
 	bookClubBySlug(slug: String!): BookClub
 	emailers: [Emailer!]!
 	emailerById(id: Int!): Emailer
@@ -1895,6 +1908,7 @@ type SmartList {
 	visibility: EntityVisibility!
 	creatorId: String!
 	filters: String!
+	thumbnail: ImageRef!
 	views: [SmartListView!]!
 }
 
