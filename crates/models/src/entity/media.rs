@@ -166,6 +166,12 @@ impl Entity {
 		apply_age_restriction_filter(select, user.age_restriction.clone())
 	}
 
+	pub fn apply_for_user(user: &AuthUser, select: Select<Entity>) -> Select<Entity> {
+		let select = apply_series_metadata_join(select);
+		let select = apply_library_hidden_filter(select, user);
+		apply_age_restriction_filter(select, user.age_restriction.clone())
+	}
+
 	pub fn find_media_ids_for_user(id: String, user: &AuthUser) -> Select<Entity> {
 		Self::find_for_user(user)
 			.select_only()

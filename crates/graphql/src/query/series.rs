@@ -190,9 +190,9 @@ impl SeriesQuery {
 						.one(conn)
 						.await?
 						.ok_or("Cursor not found")?;
-					cursor.desc().after(series.created_at);
+					cursor.after(series.created_at);
 				}
-				cursor.first(info.limit);
+				cursor.first(info.limit).desc();
 
 				let models = cursor
 					.into_model::<series::ModelWithMetadata>()
