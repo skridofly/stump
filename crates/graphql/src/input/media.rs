@@ -5,7 +5,7 @@ use sea_orm::{prelude::*, ActiveValue::Set};
 #[derive(Debug, Clone, InputObject)]
 pub struct EpubProgressInput {
 	pub epubcfi: String,
-	pub percentage: Decimal,
+	pub percentage: Option<Decimal>,
 	pub is_complete: Option<bool>,
 	pub elapsed_seconds: Option<i64>,
 }

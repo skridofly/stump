@@ -58,7 +58,7 @@ export default function BookReaderDropdown({ book }: Props) {
 		} else {
 			return undefined
 		}
-	}, [book])
+	}, [book, paths])
 
 	/**
 	 * The URL to use when the user wants to read from the beginning

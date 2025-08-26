@@ -1,9 +1,10 @@
 import { PREFETCH_STALE_TIME, queryClient, useSDK, useSuspenseGraphQL } from '@stump/client'
 import { ButtonOrLink, Heading, Spacer, Text } from '@stump/components'
 import { graphql, useFragment, UserPermission } from '@stump/graphql'
+import { useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import sortBy from 'lodash/sortBy'
-import { Suspense, useMemo } from 'react'
+import { Suspense, useEffect, useMemo } from 'react'
 import { Helmet } from 'react-helmet'
 import { useParams } from 'react-router'
 import { useMediaMatch } from 'rooks'
@@ -83,6 +84,11 @@ export default function BookOverviewScene() {
 		dayjs(completedAt).toDate(),
 	).at(-1)?.completedAt
 	const links = media.metadata?.links.filter((l) => !!l) ?? []
+
+	const client = useQueryClient()
+	useEffect(() => {
+		client.invalidateQueries({ exact: false, queryKey: [sdk.cacheKeys.bookReader] })
+	}, [client, sdk.cacheKeys.bookReader])
 
 	return (
 		<SceneContainer>

@@ -12,12 +12,14 @@ import {
 	graphql,
 	ReadingMode,
 } from '@stump/graphql'
+import { useQueryClient } from '@tanstack/react-query'
 import { Book, Rendition } from 'epubjs'
 import uniqby from 'lodash/uniqBy'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import AutoSizer from 'react-virtualized-auto-sizer'
 import { toast } from 'sonner'
 
+import Spinner from '@/components/Spinner'
 import { useTheme } from '@/hooks'
 import { useBookPreferences } from '@/scenes/book/reader/useBookPreferences'
 
@@ -30,6 +32,32 @@ import { applyTheme, stumpDark } from './themes'
 // TODO: Support elapsed time tracking!!!!
 
 // NOTE: http://epubjs.org/documentation/0.3/ for epubjs documentation overview
+
+const LOCATIONS_CACHE_KEY = 'stump:epubjs-locations-cache'
+
+const formatCacheKey = (id: string) => `${LOCATIONS_CACHE_KEY}:book-${id}`
+
+const loadCachedLocations = (id: string): string[] | null => {
+	const cached = localStorage.getItem(formatCacheKey(id))
+	if (!cached) {
+		return null
+	}
+
+	try {
+		const parsed = JSON.parse(cached)
+		if (Array.isArray(parsed) && typeof parsed.at(0) === 'string') {
+			return parsed
+		}
+	} catch (error) {
+		console.error('Failed to parse cached locations:', error)
+	}
+
+	return null
+}
+
+const saveCachedLocations = (id: string, locations: string[]) => {
+	localStorage.setItem(formatCacheKey(id), JSON.stringify(locations))
+}
 
 /** The props for the EpubJsReader component */
 type EpubJsReaderProps = {
@@ -119,6 +147,12 @@ const mutation = graphql(`
 	mutation UpdateEpubProgress($id: ID!, $input: MediaProgressInput!) {
 		updateMediaProgress(id: $id, input: $input) {
 			__typename
+			... on ActiveReadingSession {
+				percentageCompleted
+				epubcfi
+				page
+				elapsedSeconds
+			}
 		}
 	}
 `)
@@ -147,10 +181,45 @@ export default function EpubJsReader({ id, isIncognito }: EpubJsReaderProps) {
 	const [sectionsLengths, setSectionLengths] = useState<SectionLengths | null>(null)
 
 	const [currentLocation, setCurrentLocation] = useState<EpubLocationState>()
+	const [isInitialLoading, setIsInitialLoading] = useState(true)
 
 	const { bookPreferences } = useBookPreferences({
 		book: ebook.media,
 	})
+
+	const client = useQueryClient()
+	const { mutate } = useGraphQLMutation(mutation, {
+		onSuccess: ({ updateMediaProgress: data }) => {
+			client.setQueryData(['epubJsReader', id], (prevData: EpubJsReaderQuery) => {
+				if (!prevData) return prevData
+
+				return {
+					...prevData,
+					epubById: {
+						...prevData.epubById,
+						media: {
+							...prevData.epubById.media,
+							readProgress: data.__typename === 'ActiveReadingSession' ? data : null,
+						},
+					},
+				}
+			})
+		},
+	})
+
+	const updateProgress = useCallback(
+		(input: EpubProgressInput) => {
+			if (isIncognito) return
+
+			mutate({
+				id: ebook.media?.id || '',
+				input: {
+					epub: input,
+				},
+			})
+		},
+		[mutate, ebook, isIncognito],
+	)
 
 	const existingBookmarks = useMemo(
 		() =>
@@ -202,22 +271,89 @@ export default function EpubJsReader({ id, isIncognito }: EpubJsReaderProps) {
 		}
 	}
 
+	const computeNaiveProgress = useCallback(
+		({ start }: EpubLocationState) => {
+			let percentage: number | null = null
+
+			const spineSize = ebook.spine.length
+			if (spineSize) {
+				const currentChapterPage = start.displayed.page
+				const pagesInChapter = start.displayed.total
+
+				const chapterCount = spineSize //* not a great assumption
+				//* The percentage of the book that has been read based on spine position.
+				//* We treat this as: (current_spine_index + page_progress_in_spine) / total_spine_items
+				const spineProgress = start.index / chapterCount
+				const totalChapterPercentage = spineProgress
+				//* The percentage of the current chapter that has been read based on the page number.
+				//* E.g. if you are on page 2 of 20 in the current chapter, this will be 0.1.
+				const chapterPercentage = currentChapterPage / pagesInChapter
+				//* The percentage of the book that has been read based on the current page, assuming
+				//* that each chapter is the same length. This is obviously not ideal, but epubjs is
+				//* terrible and doesn't provide a better way to do this.
+				const naiveAdjustment = chapterPercentage * (1 / chapterCount)
+
+				const naiveTotal = totalChapterPercentage + naiveAdjustment
+				percentage = naiveTotal
+			}
+
+			return percentage
+		},
+		[ebook.spine],
+	)
+
+	const computeProgress = useCallback(
+		async (location: EpubLocationState) => {
+			let percentageCompleted = book?.locations?.percentageFromCfi(location.start.cfi) ?? null
+			if (percentageCompleted == null) {
+				// Attempt to reload the locations
+				await book?.locations?.generate(1000)
+				percentageCompleted = book?.locations?.percentageFromCfi(location.start.cfi) ?? null
+			}
+
+			if (percentageCompleted == null) {
+				console.warn('No CFI percentage available, falling back to spine-based calculation')
+				percentageCompleted = computeNaiveProgress(location)
+			}
+
+			if (percentageCompleted == null) {
+				percentageCompleted = computeNaiveProgress(location)
+			}
+
+			if (percentageCompleted == null) {
+				console.warn('Failed to compute any percentage-based progress')
+				return
+			}
+
+			updateProgress({
+				epubcfi: location.start.cfi,
+				percentage: percentageCompleted,
+				isComplete: percentageCompleted >= 1.0,
+			})
+		},
+		[book, computeNaiveProgress, updateProgress],
+	)
+
 	/**
 	 * Syncs the current location with local state whenever epubjs internal location
 	 * changes. It will also try and determine the current chapter information.
 	 *
 	 * @param changeState The new location state of the epub
 	 */
-	const handleLocationChange = useCallback((changeState: EpubLocationState) => {
-		const start = changeState.start
-		//* NOTE: this shouldn't happen, but the types are so unreliable that I am
-		//* adding this extra check as a precaution.
-		if (!start) {
-			return
-		}
-		setCurrentLocation(changeState)
-		focusIframe()
-	}, [])
+	const handleLocationChange = useCallback(
+		(changeState: EpubLocationState) => {
+			const start = changeState.start
+			//* NOTE: this shouldn't happen, but the types are so unreliable that I am
+			//* adding this extra check as a precaution.
+			if (!start) {
+				return
+			}
+			setCurrentLocation(changeState)
+			focusIframe()
+			computeProgress(changeState)
+		},
+		[computeProgress],
+	)
 
 	/**
 	 * This effect is responsible for initializing the epubjs book, which gets stored in
@@ -271,6 +407,20 @@ export default function EpubJsReader({ id, isIncognito }: EpubJsReaderProps) {
 		[theme],
 	)
 
+	const generateLocations = useCallback(
+		async (book: Book) => {
+			try {
+				const locations = await book.locations.generate(1000)
+				saveCachedLocations(ebook.mediaId, locations)
+			} catch (error) {
+				console.error('Failed to generate locations for epub', { error })
+			} finally {
+				setIsInitialLoading(false)
+			}
+		},
+		[ebook.mediaId],
+	)
+
 	const didRenderToScreen = useRef(false)
 	/**
 	 * This effect is responsible for rendering the epub to the screen. It will only run once
@@ -280,7 +430,7 @@ export default function EpubJsReader({ id, isIncognito }: EpubJsReaderProps) {
 	useEffect(() => {
 		if (!book || !ref.current) return
 
-		book.ready.then(() => {
+		book.ready.then(async () => {
 			if (book.spine && !didRenderToScreen.current) {
 				didRenderToScreen.current = true
 				const defaultLoc = book.rendition?.location?.start?.cfi
@@ -288,6 +438,17 @@ export default function EpubJsReader({ id, isIncognito }: EpubJsReaderProps) {
 				const boundingClient = ref.current?.getBoundingClientRect()
 				const height = boundingClient?.height ? boundingClient.height - 2 : '100%'
 				const width = boundingClient?.width ?? '100%'
+
+				const cachedLocations = loadCachedLocations(ebook.mediaId)
+				if (cachedLocations) {
+					book.locations.load(JSON.stringify(cachedLocations))
+					setIsInitialLoading(false)
+					// We still want to re-generate in-case the cache is bad, but we don't
+					// need to block the UI
+					generateLocations(book)
+				} else {
+					await generateLocations(book)
+				}
 
 				const rendition_ = book.renderTo(ref.current!, {
 					width,
@@ -317,6 +478,7 @@ export default function EpubJsReader({ id, isIncognito }: EpubJsReaderProps) {
 				window.addEventListener('keydown', keydown_callback)
 
 				applyEpubPreferences(rendition_, bookPreferences)
+
 				setRendition(rendition_)
 
 				const targetCfi = ebook.media?.readProgress?.epubcfi
@@ -331,7 +493,15 @@ export default function EpubJsReader({ id, isIncognito }: EpubJsReaderProps) {
 				createSectionLengths(book, setSectionLengths)
 			}
 		})
-	}, [book, applyEpubPreferences, bookPreferences, handleLocationChange, isIncognito, ebook])
+	}, [
+		book,
+		applyEpubPreferences,
+		bookPreferences,
+		handleLocationChange,
+		isIncognito,
+		ebook,
+		generateLocations,
+	])
 
 	// I'm hopeful this solves: https://github.com/stumpapp/stump/issues/726
 	// Honestly though epub.js is such a migraine that I'm OK just waiting until
@@ -358,18 +528,6 @@ export default function EpubJsReader({ id, isIncognito }: EpubJsReaderProps) {
 		const resizeObserver = new ResizeObserver((entries) => {
 			for (const entry of entries) {
 				const { width, height } = entry.contentRect
-
-				const { width: currentWidth, height: currentHeight } = ref.current
-					? ref.current.getBoundingClientRect()
-					: {
-							height: 0,
-							width: 0,
-						}
-
-				if (currentWidth === width && currentHeight === height) {
-					continue
-				}
-
 				rendition?.resize(width, height)
 			}
 		})
@@ -402,8 +560,8 @@ export default function EpubJsReader({ id, isIncognito }: EpubJsReaderProps) {
 		() => {
 			return () => {
 				Promise.all([
-					queryClient.refetchQueries({ queryKey: ['bookOverview', id], exact: false }),
-					queryClient.refetchQueries({ queryKey: ['keepReading'], exact: false }),
+					queryClient.invalidateQueries({ queryKey: ['bookOverview', id], exact: false }),
+					queryClient.invalidateQueries({ queryKey: ['keepReading'], exact: false }),
 				])
 			}
 		},
@@ -523,90 +681,6 @@ export default function EpubJsReader({ id, isIncognito }: EpubJsReaderProps) {
 		},
 		[book, rendition],
 	)
-
-	const { mutate } = useGraphQLMutation(mutation)
-	/**
-	 * This effect is responsible for syncing the current epub progress information to
-	 * the Stump server. If not location information is available, this effect will do nothing.
-	 *
-	 * Note: This effect has some poor assumptions during the calculation of the percentage
-	 * completed number. This is largely due to epubjs not providing reliable means of getting
-	 * this information, or the pieces of information needed to calculate it. Be sure to
-	 * review the comments in this effect carefully before making any changes.
-	 */
-	useEffect(() => {
-		//* We can't do anything without the entity, so short circuit. This shouldn't
-		//* really happen, though.
-		if (!ebook || !ebook.media) return
-
-		const updateProgress = (input: EpubProgressInput) => {
-			if (!book) return
-			if (isIncognito) return
-			if (ebook.media?.readProgress?.epubcfi === input.epubcfi) {
-				console.warn('Epub progress is the same as the last update, skipping', {
-					payload: input,
-					existingProgress: ebook.media?.readProgress,
-				})
-				return
-			}
-
-			mutate({
-				id: ebook.media?.id || '',
-				input: {
-					epub: input,
-				},
-			})
-		}
-
-		if (!currentLocation) {
-			return
-		}
-
-		const { start, end, atEnd } = currentLocation
-
-		if (!start && !end) {
-			return
-		}
-
-		let percentage: number | null = null
-
-		const spineSize = ebook.spine.length
-		if (spineSize) {
-			const currentChapterPage = start.displayed.page
-			const pagesInChapter = start.displayed.total
-
-			const chapterCount = spineSize //* not a great assumption
-			//* The percentage of the book that has been read based on the chapter index.
-			//* E.g. if you are on chapter 15 of 20, this will be 0.75.
-			const totalChapterPercentage = start.index / chapterCount
-			//* The percentage of the current chapter that has been read based on the page number.
-			//* E.g. if you are on page 2 of 20 in the current chapter, this will be 0.1.
-			const chapterPercentage = currentChapterPage / pagesInChapter
-			//* The percentage of the book that has been read based on the current page, assuming
-			//* that each chapter is the same length. This is obviously not ideal, but epubjs is
-			//* terrible and doesn't provide a better way to do this.
-			const naiveAdjustment = chapterPercentage * (1 / chapterCount)
-
-			const naiveTotal = totalChapterPercentage + naiveAdjustment
-			const isAtEnd = Math.abs(naiveTotal - 1) < 0.02
-			if (isAtEnd) {
-				//* if total is +- 0.02 of 1, then we are at the end of the book.
-				percentage = 1.0
-			} else {
-				percentage = naiveTotal
-			}
-
-			if (ebook.media?.id) {
-				updateProgress({
-					epubcfi: start.cfi,
-					isComplete: atEnd ?? percentage === 1.0,
-					percentage,
-				})
-			}
-		} else {
-			console.warn('Spine size is not available, cannot calculate progress')
-		}
-	}, [currentLocation, ebook, book, isIncognito, mutate])
 
 	/**
 	 * A callback for attempting to extract preview text from a given cfi. This is used for bookmarks,
@@ -751,12 +825,17 @@ export default function EpubJsReader({ id, isIncognito }: EpubJsReaderProps) {
 						return <div ref={ref} key={ebook.media.id} style={{ height, width }} />
 					}}
 				</AutoSizer>
+
+				{isInitialLoading && (
+					<div className="flex h-full flex-1 items-center justify-center">
+						<Spinner />
+					</div>
+				)}
 			</div>
 		</EpubReaderContainer>
 	)
 }
 
-// TODO(graphql): Need types for EpubContent
 function parseToc(toc: EpubJsReaderQuery['epubById']['toc']): EpubContent[] {
 	if (!toc) return []
 
@@ -868,4 +947,11 @@ interface SpineItem {
 interface SpineItemFindResult {
 	cfi: string
 	excerpt: string
+}
+
+interface EpubContent {
+	label: string
+	content: string
+	children: EpubContent[]
+	play_order: number
 }

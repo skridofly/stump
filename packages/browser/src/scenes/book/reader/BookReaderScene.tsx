@@ -1,5 +1,6 @@
-import { invalidateQueries, useGraphQLMutation, useSDK, useSuspenseGraphQL } from '@stump/client'
+import { useGraphQLMutation, useSDK, useSuspenseGraphQL } from '@stump/client'
 import { BookReaderSceneQuery, graphql, ReadingMode } from '@stump/graphql'
+import { useQueryClient } from '@tanstack/react-query'
 import { Suspense, useCallback, useEffect, useMemo } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 
@@ -116,15 +117,16 @@ function BookReaderScene({ book }: Props) {
 		bookPreferences: { readingMode, animatedReader },
 	} = useBookPreferences({ book })
 
+	const client = useQueryClient()
 	/**
 	 * An effect to invalidate the in progress media query when the component unmounts
 	 * so that the in progress media list is updated when the user returns to that section
 	 */
 	useEffect(() => {
 		return () => {
-			invalidateQueries({ exact: false, keys: [sdk.cacheKeys.inProgress] })
+			client.invalidateQueries({ exact: false, queryKey: [sdk.cacheKeys.inProgress] })
 		}
-	}, [sdk.cacheKeys.inProgress])
+	}, [sdk, client])
 
 	/**
 	 * An effect to update the read progress whenever the page changes in the URL

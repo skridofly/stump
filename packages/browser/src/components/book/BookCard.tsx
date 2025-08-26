@@ -24,6 +24,7 @@ export const BookCardFragment = graphql(`
 			percentageCompleted
 			epubcfi
 			page
+			updatedAt
 		}
 		readHistory {
 			__typename

@@ -271,11 +271,11 @@ impl MediaMutation {
 		match input.clone() {
 			MediaProgressInput::Epub(input) => {
 				active_session.epubcfi = Set(Some(input.epubcfi.clone()));
-				active_session.percentage_completed = Set(Some(input.percentage));
+				active_session.percentage_completed = Set(input.percentage);
 				active_session.elapsed_seconds = Set(input.elapsed_seconds);
-				is_complete = input
-					.is_complete
-					.unwrap_or(input.percentage >= Decimal::new(1, 0));
+				is_complete = input.is_complete.unwrap_or(
+					input.percentage.unwrap_or_default() >= Decimal::new(1, 0),
+				);
 			},
 			MediaProgressInput::Paged(input) => {
 				active_session.page = Set(Some(input.page));

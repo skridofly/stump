@@ -23,6 +23,13 @@ const query = graphql(`
 					nextCursor
 					limit
 				}
+				... on OffsetPaginationInfo {
+					currentPage
+					totalPages
+					pageSize
+					pageOffset
+					zeroBased
+				}
 			}
 		}
 	}
@@ -35,8 +42,9 @@ export const usePrefetchContinueReading = () => {
 		client.prefetchInfiniteQuery({
 			queryKey: sdk.cacheKey('inProgress'),
 			initialPageParam: {
-				cursor: {
-					limit: 20,
+				offset: {
+					pageSize: 20,
+					page: 1,
 				},
 			},
 			queryFn: ({ pageParam }) => {
@@ -58,11 +66,12 @@ export default function ContinueReadingMediaContainer() {
 }
 
 function ContinueReadingMedia() {
+	const { sdk } = useSDK()
 	const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteSuspenseGraphQL(
 		query,
-		['keepReading'],
+		[sdk.cacheKeys.inProgress],
 		{
-			pagination: { cursor: { limit: 20 } },
+			pagination: { offset: { pageSize: 20, page: 1 } },
 		},
 	)
 	const nodes = data.pages.flatMap((page) => page.keepReading.nodes)
@@ -98,57 +107,3 @@ function ContinueReadingMedia() {
 		/>
 	)
 }
-
-// function ContinueReadingMedia() {
-// 	const [, startTransition] = useTransition()
-// 	const {
-// 		data: {
-// 			keepReading: { nodes, pageInfo },
-// 		},
-// 		fetchMore,
-// 	} = useSuspenseQuery(query, {
-// 		variables: {
-// 			pagination: { cursor: { limit: 20 } },
-// 		},
-// 		queryKey: ['continueReading'],
-// 	})
-
-// 	const { t } = useLocaleContext()
-
-// 	const handleFetchMore = useCallback(() => {
-// 		const nextPageParam = getNextPageParam(pageInfo as PaginationInfo)
-// 		if (nextPageParam) {
-// 			startTransition(() => {
-// 				fetchMore({
-// 					variables: {
-// 						pagination: nextPageParam,
-// 					},
-// 					updateQuery,
-// 				})
-// 			})
-// 		}
-// 	}, [fetchMore, pageInfo])
-
-// 	const cards = nodes.map((node) => <BookCard key={node.id} id={node.id} fullWidth={false} />)
-
-// 	return (
-// 		<HorizontalCardList_
-// 			title={t('homeScene.continueReading.title')}
-// 			items={cards}
-// 			onFetchMore={handleFetchMore}
-// 			emptyState={
-// 				<div className="flex items-start justify-start space-x-3 rounded-lg border border-dashed border-edge-subtle px-4 py-4">
-// 					<span className="rounded-lg border border-edge bg-background-surface p-2">
-// 						<BookMarked className="h-8 w-8 text-foreground-muted" />
-// 					</span>
-// 					<div>
-// 						<Text>{t('homeScene.continueReading.emptyState.heading')}</Text>
-// 						<Text size="sm" variant="muted">
-// 							{t('homeScene.continueReading.emptyState.message')}
-// 						</Text>
-// 					</div>
-// 				</div>
-// 			}
-// 		/>
-// 	)
-// }

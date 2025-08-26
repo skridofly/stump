@@ -47,6 +47,7 @@ pub struct Epub {
 	pub media_id: String,
 	pub spine: Vec<SpineItem>,
 	pub resources: HashMap<String, (String, String)>,
+	// Note: Not using [EpubContent] since it is recursive and selections would be a nightmare
 	pub toc: Vec<String>,
 	pub metadata: HashMap<String, Vec<String>>,
 	pub root_base: String,

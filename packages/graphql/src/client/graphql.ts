@@ -529,7 +529,7 @@ export type EpubProgressInput = {
   elapsedSeconds?: InputMaybe<Scalars['Int']['input']>;
   epubcfi: Scalars['String']['input'];
   isComplete?: InputMaybe<Scalars['Boolean']['input']>;
-  percentage: Scalars['Decimal']['input'];
+  percentage?: InputMaybe<Scalars['Decimal']['input']>;
 };
 
 /**
@@ -3303,7 +3303,7 @@ export type TagSelectQueryQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type TagSelectQueryQuery = { __typename?: 'Query', tags: Array<{ __typename?: 'Tag', id: number, name: string }> };
 
-export type BookCardFragment = { __typename?: 'Media', id: string, resolvedName: string, extension: string, pages: number, size: number, status: FileStatus, thumbnail: { __typename?: 'ImageRef', url: string }, readProgress?: { __typename?: 'ActiveReadingSession', percentageCompleted?: any | null, epubcfi?: string | null, page?: number | null } | null, readHistory: Array<{ __typename: 'FinishedReadingSession', completedAt: any }> } & { ' $fragmentName'?: 'BookCardFragment' };
+export type BookCardFragment = { __typename?: 'Media', id: string, resolvedName: string, extension: string, pages: number, size: number, status: FileStatus, thumbnail: { __typename?: 'ImageRef', url: string }, readProgress?: { __typename?: 'ActiveReadingSession', percentageCompleted?: any | null, epubcfi?: string | null, page?: number | null, updatedAt?: any | null } | null, readHistory: Array<{ __typename: 'FinishedReadingSession', completedAt: any }> } & { ' $fragmentName'?: 'BookCardFragment' };
 
 export type BookSearchOverlayQueryVariables = Exact<{
   pagination?: InputMaybe<Pagination>;
@@ -3435,7 +3435,7 @@ export type UpdateEpubProgressMutationVariables = Exact<{
 }>;
 
 
-export type UpdateEpubProgressMutation = { __typename?: 'Mutation', updateMediaProgress: { __typename: 'ActiveReadingSession' } | { __typename: 'FinishedReadingSession' } };
+export type UpdateEpubProgressMutation = { __typename?: 'Mutation', updateMediaProgress: { __typename: 'ActiveReadingSession', percentageCompleted?: any | null, epubcfi?: string | null, page?: number | null, elapsedSeconds?: number | null } | { __typename: 'FinishedReadingSession' } };
 
 export type CreateOrUpdateBookmarkMutationVariables = Exact<{
   input: BookmarkInput;
@@ -3681,7 +3681,7 @@ export type ContinueReadingMediaQueryQueryVariables = Exact<{
 export type ContinueReadingMediaQueryQuery = { __typename?: 'Query', keepReading: { __typename?: 'PaginatedMediaResponse', nodes: Array<(
       { __typename?: 'Media', id: string }
       & { ' $fragmentRefs'?: { 'BookCardFragment': BookCardFragment } }
-    )>, pageInfo: { __typename: 'CursorPaginationInfo', currentCursor?: string | null, nextCursor?: string | null, limit: number } | { __typename: 'OffsetPaginationInfo' } } };
+    )>, pageInfo: { __typename: 'CursorPaginationInfo', currentCursor?: string | null, nextCursor?: string | null, limit: number } | { __typename: 'OffsetPaginationInfo', currentPage: number, totalPages: number, pageSize: number, pageOffset: number, zeroBased: boolean } } };
 
 export type HomeSceneQueryQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -4415,6 +4415,7 @@ export const BookCardFragmentDoc = new TypedDocumentString(`
     percentageCompleted
     epubcfi
     page
+    updatedAt
   }
   readHistory {
     __typename
@@ -5016,6 +5017,7 @@ export const BookSearchOverlayDocument = new TypedDocumentString(`
     percentageCompleted
     epubcfi
     page
+    updatedAt
   }
   readHistory {
     __typename
@@ -5244,6 +5246,12 @@ export const UpdateEpubProgressDocument = new TypedDocumentString(`
     mutation UpdateEpubProgress($id: ID!, $input: MediaProgressInput!) {
   updateMediaProgress(id: $id, input: $input) {
     __typename
+    ... on ActiveReadingSession {
+      percentageCompleted
+      epubcfi
+      page
+      elapsedSeconds
+    }
   }
 }
     `) as unknown as TypedDocumentString<UpdateEpubProgressMutation, UpdateEpubProgressMutationVariables>;
@@ -5380,6 +5388,7 @@ export const BookOverviewSceneDocument = new TypedDocumentString(`
     percentageCompleted
     epubcfi
     page
+    updatedAt
   }
   readHistory {
     __typename
@@ -5448,6 +5457,7 @@ export const BooksAfterCurrentQueryDocument = new TypedDocumentString(`
     percentageCompleted
     epubcfi
     page
+    updatedAt
   }
   readHistory {
     __typename
@@ -5685,6 +5695,7 @@ export const BookSearchSceneDocument = new TypedDocumentString(`
     percentageCompleted
     epubcfi
     page
+    updatedAt
   }
   readHistory {
     __typename
@@ -5756,6 +5767,13 @@ export const ContinueReadingMediaQueryDocument = new TypedDocumentString(`
         nextCursor
         limit
       }
+      ... on OffsetPaginationInfo {
+        currentPage
+        totalPages
+        pageSize
+        pageOffset
+        zeroBased
+      }
     }
   }
 }
@@ -5773,6 +5791,7 @@ export const ContinueReadingMediaQueryDocument = new TypedDocumentString(`
     percentageCompleted
     epubcfi
     page
+    updatedAt
   }
   readHistory {
     __typename
@@ -5815,6 +5834,7 @@ export const RecentlyAddedMediaQueryDocument = new TypedDocumentString(`
     percentageCompleted
     epubcfi
     page
+    updatedAt
   }
   readHistory {
     __typename
@@ -5941,6 +5961,7 @@ export const LibraryBooksSceneDocument = new TypedDocumentString(`
     percentageCompleted
     epubcfi
     page
+    updatedAt
   }
   readHistory {
     __typename
@@ -6197,6 +6218,7 @@ export const SeriesBooksSceneDocument = new TypedDocumentString(`
     percentageCompleted
     epubcfi
     page
+    updatedAt
   }
   readHistory {
     __typename
@@ -6931,6 +6953,7 @@ export const SmartListItemsDocument = new TypedDocumentString(`
     percentageCompleted
     epubcfi
     page
+    updatedAt
   }
   readHistory {
     __typename

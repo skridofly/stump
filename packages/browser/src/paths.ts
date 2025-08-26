@@ -62,9 +62,6 @@ const pathsInternal = {
 
 		if (isEpub || !!epubcfi) {
 			searchParams.append('stream', 'false')
-			if (epubcfi) {
-				searchParams.append('cfi', encodeURIComponent(epubcfi))
-			}
 			return `${baseUrl}/epub-reader?${searchParams.toString()}`
 		}
 

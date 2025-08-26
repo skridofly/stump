@@ -483,7 +483,7 @@ type Epub {
 
 input EpubProgressInput {
 	epubcfi: String!
-	percentage: Decimal!
+	percentage: Decimal
 	isComplete: Boolean
 	elapsedSeconds: Int
 }
