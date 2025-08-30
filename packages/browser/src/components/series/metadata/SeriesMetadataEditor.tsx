@@ -13,6 +13,7 @@ import { match, P } from 'ts-pattern'
 
 import {
 	BadgeCell,
+	BadgeListCell,
 	isEmptyField,
 	MetadataEditorContext,
 	MetadataEditorHeader,
@@ -23,23 +24,34 @@ import {
 	SeriesMetadataKeys,
 	TextCell,
 } from '@/components/metadataEditor'
+import EnumCell from '@/components/metadataEditor/cells/EnumCell'
 import { useAppContext } from '@/context'
 import { usePaths } from '@/paths'
 
-import { getEditorDefaultValues, schema, SeriesMetadataEditorValues } from './schema'
+import {
+	getEditorDefaultValues,
+	schema,
+	SeriesMetadataEditorValues,
+	SeriesStatus,
+	VALID_SERIES_STATUS,
+} from './schema'
 
 const fragment = graphql(`
-	fragment SeriesMetadataEditor on SeriesMetadataModel {
-		metaType
-		title
-		summary
-		publisher
-		imprint
-		comicid
-		volume
-		booktype
+	fragment SeriesMetadataEditor on SeriesMetadata {
 		ageRating
+		booktype
+		characters
+		comicid
+		genres
+		imprint
+		links
+		metaType
+		publisher
 		status
+		summary
+		title
+		volume
+		writers
 	}
 `)
 
@@ -115,10 +127,51 @@ export default function SeriesMetadataEditor({ seriesId, data }: Props) {
 								}}
 							/>
 						))
+						.with(P.union('genres', 'characters', 'writers'), (field) => {
+							const values = getProperty(metadata, field) ?? []
+							return (
+								<BadgeListCell
+									binding={field}
+									values={values}
+									itemUrl={(index) => {
+										const item = values[index]
+										if (!item) return undefined
+										return paths.bookSearchWithFilter({
+											metadata: { [field]: { likeAnyOf: [item] } },
+										})
+									}}
+								/>
+							)
+						})
+						.with('links', () => {
+							const safeUrls = (getProperty(metadata, 'links') ?? []).map((url) => {
+								try {
+									return new URL(url).hostname
+								} catch {
+									return url
+								}
+							})
+							return (
+								<BadgeListCell
+									binding="links"
+									values={safeUrls}
+									itemUrl={(index) => metadata?.links?.[index]}
+								/>
+							)
+						})
+						.with('status', () => (
+							<EnumCell
+								binding="status"
+								value={metadata?.status as SeriesStatus}
+								// TODO: Translation support
+								options={VALID_SERIES_STATUS.map((status) => ({ label: status, value: status }))}
+							/>
+						))
 						.otherwise((field) => (
 							<TextCell
 								binding={field}
 								value={String(getProperty(metadata, info.getValue()) ?? '')}
+								isLong={field === 'summary'}
 							/>
 						)),
 				enableResizing: false,
