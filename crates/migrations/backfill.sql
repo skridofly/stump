@@ -257,27 +257,28 @@ FROM backup."media_metadata";
 
 -- Now just go in alpha-ish order and dump everything:
 
-INSERT INTO "api_keys"(
-        "id",
-        "name",
-        "short_token",
-        "long_token_hash",
-        "permissions",
-        "created_at",
-        "last_used_at",
-        "expires_at",
-        "user_id"
-    )
-SELECT "id",
-    "name",
-    "short_token",
-    "long_token_hash",
-    "permissions",
-    "created_at",
-    "last_used_at",
-    "expires_at",
-    "user_id"
-FROM backup."api_keys";
+-- Note: It is not feasible to port over the api_keys because a few columns were changed
+-- INSERT INTO "api_keys"(
+--         "id",
+--         "name",
+--         "short_token",
+--         "long_token_hash",
+--         "permissions",
+--         "created_at",
+--         "last_used_at",
+--         "expires_at",
+--         "user_id"
+--     )
+-- SELECT "id",
+--     "name",
+--     "short_token",
+--     "long_token_hash",
+--     "permissions",
+--     "created_at",
+--     "last_used_at",
+--     "expires_at",
+--     "user_id"
+-- FROM backup."api_keys";
 
 INSERT INTO "bookmarks"(
         "id",
