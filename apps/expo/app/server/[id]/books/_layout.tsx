@@ -1,8 +1,10 @@
 import { Stack, useNavigation, useRouter } from 'expo-router'
-import { ChevronLeft } from 'lucide-react-native'
 import { Platform } from 'react-native'
+import { icons } from '~/lib'
 
 import { usePreferencesStore } from '~/stores'
+
+const { ChevronLeft } = icons
 
 export default function Screen() {
 	const animationEnabled = usePreferencesStore((state) => !state.reduceAnimations)
@@ -24,7 +26,9 @@ export default function Screen() {
 					headerLeft:
 						Platform.OS === 'android'
 							? undefined
-							: () => <ChevronLeft onPress={() => navigation.goBack()} />,
+							: () => (
+									<ChevronLeft className="text-foreground" onPress={() => navigation.goBack()} />
+								),
 					headerTransparent: Platform.OS === 'ios',
 					headerLargeTitleStyle: {
 						fontSize: 24,

@@ -28,7 +28,7 @@ const query = graphql(`
 `)
 
 type Props = {
-	header: React.ReactElement
+	header?: React.ReactElement
 }
 
 export default function RecentlyAddedSeries({ header }: Props) {
@@ -71,6 +71,7 @@ export default function RecentlyAddedSeries({ header }: Props) {
 			onEndReached={onEndReached}
 			contentInsetAdjustmentBehavior="always"
 			ListHeaderComponent={header}
+			ListHeaderComponentStyle={header ? { paddingBottom: 16 } : undefined}
 		/>
 	)
 }

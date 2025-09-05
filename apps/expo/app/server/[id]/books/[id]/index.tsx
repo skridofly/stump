@@ -4,7 +4,6 @@ import dayjs from 'dayjs'
 import duration from 'dayjs/plugin/duration'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router'
-import { ChevronLeft } from 'lucide-react-native'
 import { useLayoutEffect } from 'react'
 import { Platform, View } from 'react-native'
 import { Pressable, ScrollView } from 'react-native-gesture-handler'
@@ -16,9 +15,11 @@ import { BookActionMenu } from '~/components/book/overview'
 import { BookDescription, InfoRow, InfoSection, InfoStat } from '~/components/book/overview'
 import { FasterImage } from '~/components/Image'
 import RefreshControl from '~/components/RefreshControl'
-import { Button, Heading, Text } from '~/components/ui'
+import { Button, Heading, icons, Text } from '~/components/ui'
 import { formatBytes, parseGraphQLDecimal } from '~/lib/format'
 import { cn } from '~/lib/utils'
+
+const { ChevronLeft } = icons
 
 dayjs.extend(relativeTime)
 dayjs.extend(duration)
@@ -122,7 +123,9 @@ export default function Screen() {
 	const navigation = useNavigation()
 	useLayoutEffect(() => {
 		navigation.setOptions({
-			headerLeft: () => <ChevronLeft onPress={() => navigation.goBack()} />,
+			headerLeft: () => (
+				<ChevronLeft className="text-foreground" onPress={() => navigation.goBack()} />
+			),
 			headerRight: () => (book ? <BookActionMenu data={book} /> : null),
 			headerTitle: Platform.OS === 'ios' ? book?.resolvedName : '',
 		})

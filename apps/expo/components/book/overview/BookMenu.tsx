@@ -145,7 +145,7 @@ export default function BookMenu({ data }: Props) {
 				<Pressable onPress={() => setIsOpen((prev) => !prev)}>
 					{({ pressed }) => (
 						<View className={cn(pressed && 'opacity-70')}>
-							<Ellipsis size={20} className="text-foreground-muted" />
+							<Ellipsis size={20} className="text-foreground" />
 						</View>
 					)}
 				</Pressable>

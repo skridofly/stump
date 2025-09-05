@@ -1,8 +1,6 @@
 import { FlashList } from '@shopify/flash-list'
 import { useInfiniteSuspenseGraphQL } from '@stump/client'
 import { graphql } from '@stump/graphql'
-import { useNavigation } from 'expo-router'
-import { ChevronLeft } from 'lucide-react-native'
 import { useCallback, useRef } from 'react'
 import { Platform } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -47,12 +45,6 @@ export default function Screen() {
 	const {
 		activeServer: { id: serverID },
 	} = useActiveServer()
-
-	const navigation = useNavigation()
-	// useDynamicHeader({
-	// 	title: 'Books',
-	// 	headerLeft: () => <ChevronLeft onPress={() => navigation.goBack()} />,
-	// })
 
 	const store = useRef(createBookFilterStore()).current
 

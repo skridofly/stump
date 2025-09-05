@@ -4,12 +4,14 @@ import { graphql, MediaFilterInput } from '@stump/graphql'
 import { Api } from '@stump/sdk'
 import { QueryClient } from '@tanstack/react-query'
 import { useLocalSearchParams, useNavigation } from 'expo-router'
-import { ChevronLeft } from 'lucide-react-native'
 import { useCallback, useLayoutEffect, useMemo } from 'react'
 
 import BookGridItem, { IBookGridItemFragment } from '~/components/book/BookGridItem'
 import { ColumnItem } from '~/components/grid'
 import { useGridItemSize } from '~/components/grid/useGridItemSize'
+import { icons } from '~/lib'
+
+const { ChevronLeft } = icons
 
 const query = graphql(`
 	query BookSearchScreen($filter: MediaFilterInput!, $pagination: Pagination!) {
@@ -55,7 +57,9 @@ export default function Screen() {
 			headerShown: true,
 			headerTitle: 'Search Results',
 			headerBackButtonMenuEnabled: true,
-			headerLeft: () => <ChevronLeft onPress={() => navigation.goBack()} />,
+			headerLeft: () => (
+				<ChevronLeft className="text-foreground" onPress={() => navigation.goBack()} />
+			),
 		})
 	}, [navigation])
 

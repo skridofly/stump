@@ -2,7 +2,6 @@ import { useSDK } from '@stump/client'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigation, useRouter } from 'expo-router'
 import partition from 'lodash/partition'
-import { ChevronLeft } from 'lucide-react-native'
 import { useCallback, useState } from 'react'
 import { Platform, View } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
@@ -16,8 +15,10 @@ import {
 	OPDSPublicationGroup,
 } from '~/components/opds'
 import RefreshControl from '~/components/RefreshControl'
-import { Heading } from '~/components/ui'
+import { Heading, icons } from '~/components/ui'
 import { useDynamicHeader } from '~/lib/hooks/useDynamicHeader'
+
+const { ChevronLeft } = icons
 
 export default function Screen() {
 	const { activeServer } = useActiveServer()
@@ -64,7 +65,9 @@ export default function Screen() {
 	const navigation = useNavigation()
 	useDynamicHeader({
 		title: activeServer?.name || 'OPDS Feed',
-		headerLeft: () => <ChevronLeft onPress={() => navigation.goBack()} />,
+		headerLeft: () => (
+			<ChevronLeft className="text-foreground" onPress={() => navigation.goBack()} />
+		),
 		headerSearchBarOptions: hasSearch
 			? {
 					placeholder: 'Search',

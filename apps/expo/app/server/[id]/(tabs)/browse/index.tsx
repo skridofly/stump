@@ -74,13 +74,9 @@ export default function Screen() {
 			className="bg-background"
 			edges={Platform.OS === 'android' ? [] : []}
 		>
-			{/* <ScrollView contentInsetAdjustmentBehavior="automatic">
-				
-			</ScrollView> */}
-
 			<RecentlyAddedSeries
 				header={
-					<View className="px-4">
+					<View>
 						{visibleItems.map((item, idx) => (
 							<Fragment key={item.id}>
 								<Pressable
@@ -93,7 +89,7 @@ export default function Screen() {
 											color={colors.foreground.muted}
 											stroke={colors.foreground.muted}
 										/>
-										<Text>{item.title}</Text>
+										<Text className="text-lg">{item.title}</Text>
 									</View>
 								</Pressable>
 

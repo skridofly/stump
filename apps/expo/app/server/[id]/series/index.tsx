@@ -3,7 +3,6 @@ import { FlashList } from '@shopify/flash-list'
 import { useInfiniteSuspenseGraphQL } from '@stump/client'
 import { graphql } from '@stump/graphql'
 import { useNavigation } from 'expo-router'
-import { ChevronLeft } from 'lucide-react-native'
 import { useCallback, useMemo, useRef } from 'react'
 import { Platform } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -17,8 +16,11 @@ import RefreshControl from '~/components/RefreshControl'
 import { SeriesGridItem } from '~/components/series'
 import { SeriesFilterHeader } from '~/components/series/filterHeader'
 import { ISeriesGridItemFragment } from '~/components/series/SeriesGridItem'
+import { icons } from '~/lib'
 import { useDynamicHeader } from '~/lib/hooks/useDynamicHeader'
 import { createSeriesFilterStore, SeriesFilterContext } from '~/stores/filters'
+
+const { ChevronLeft } = icons
 
 const query = graphql(`
 	query SeriesScreen(
@@ -55,7 +57,9 @@ export default function Screen() {
 		title: 'Series',
 		// FIXME: Why is this required?
 		headerLeft:
-			Platform.OS === 'ios' ? () => <ChevronLeft onPress={() => navigation.goBack()} /> : undefined,
+			Platform.OS === 'ios'
+				? () => <ChevronLeft className="text-foreground" onPress={() => navigation.goBack()} />
+				: undefined,
 	})
 
 	const store = useRef(createSeriesFilterStore()).current
