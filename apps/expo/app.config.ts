@@ -99,14 +99,15 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 					},
 				},
 			],
-			[
-				'./plugins/withDrawableAssets.ts',
-				{
-					sourceDir: 'assets/icons',
-					extensions: ['.svg'],
-					createDensityFolders: false,
-				},
-			],
+			// Note: Gradle complained about .svg files
+			// [
+			// 	'./plugins/withDrawableAssets.ts',
+			// 	{
+			// 		sourceDir: 'assets/icons',
+			// 		extensions: ['.svg'],
+			// 		createDensityFolders: false,
+			// 	},
+			// ],
 		],
 		owner: 'stumpapp',
 		experiments: {
