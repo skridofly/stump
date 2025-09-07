@@ -4,46 +4,46 @@ import { graphql } from '@stump/graphql'
 import { memo, useCallback, useMemo } from 'react'
 import { View } from 'react-native'
 
-import { BookListItem } from '~/components/book'
-import { BookListItemFragmentType } from '~/components/book/BookListItem'
+import { OnDeckBookItem } from '~/components/book'
+import { OnDeckBookItemFragmentType } from '~/components/book/OnDeckBookItem'
 import { Heading, Text } from '~/components/ui'
+import { useListItemSize } from '~/lib/hooks'
 
 import { useActiveServer } from '../context'
 
 const query = graphql(`
-	query RecentlyAddedBooks($pagination: Pagination) {
-		recentlyAddedMedia(pagination: $pagination) {
+	query OnDeckBooks($pagination: Pagination) {
+		onDeck(pagination: $pagination) {
 			nodes {
 				id
-				...BookListItem
+				...OnDeckBookItem
 			}
 			pageInfo {
 				__typename
-				... on CursorPaginationInfo {
-					currentCursor
-					nextCursor
-					limit
+				... on OffsetPaginationInfo {
+					totalPages
+					currentPage
+					pageSize
+					pageOffset
+					zeroBased
 				}
 			}
 		}
 	}
 `)
 
-function RecentlyAddedBooks() {
+function OnDeck() {
 	const {
 		activeServer: { id: serverID },
 	} = useActiveServer()
 	const { data, fetchNextPage, hasNextPage } = useInfiniteSuspenseGraphQL(
 		query,
-		['recentlyAddedBooks', serverID],
+		['onDeck', serverID],
 		{
-			pagination: { cursor: { limit: 20 } },
+			pagination: { offset: { page: 1, pageSize: 20 } },
 		},
 	)
-	const nodes = useMemo(
-		() => data?.pages.flatMap((page) => page.recentlyAddedMedia.nodes) || [],
-		[data],
-	)
+	const nodes = useMemo(() => data?.pages.flatMap((page) => page.onDeck.nodes) || [], [data])
 
 	const onEndReached = useCallback(() => {
 		if (hasNextPage) {
@@ -52,13 +52,15 @@ function RecentlyAddedBooks() {
 	}, [hasNextPage, fetchNextPage])
 
 	const renderItem = useCallback(
-		({ item }: { item: BookListItemFragmentType }) => <BookListItem book={item} />,
+		({ item }: { item: OnDeckBookItemFragmentType }) => <OnDeckBookItem book={item} />,
 		[],
 	)
 
+	const { gap } = useListItemSize()
+
 	return (
 		<View className="flex gap-4">
-			<Heading size="xl">Recently Added Books</Heading>
+			<Heading size="xl">Your Next Read</Heading>
 
 			<FlashList
 				data={nodes}
@@ -68,10 +70,11 @@ function RecentlyAddedBooks() {
 				onEndReached={onEndReached}
 				onEndReachedThreshold={0.85}
 				showsHorizontalScrollIndicator={false}
-				ListEmptyComponent={<Text className="text-foreground-muted">No books recently added</Text>}
+				ItemSeparatorComponent={() => <View style={{ width: gap * 2 }} />}
+				ListEmptyComponent={<Text className="text-foreground-muted">No books on deck</Text>}
 			/>
 		</View>
 	)
 }
 
-export default memo(RecentlyAddedBooks)
+export default memo(OnDeck)

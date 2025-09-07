@@ -3,6 +3,8 @@ import { FragmentType, graphql, useFragment } from '@stump/graphql'
 import { useRouter } from 'expo-router'
 import { useCallback, useMemo } from 'react'
 import { Pressable, View } from 'react-native'
+import { ScrollView } from 'react-native-gesture-handler'
+import LinearGradient from 'react-native-linear-gradient'
 
 import { BookMetaLink } from '~/components/book'
 import { FasterImage } from '~/components/Image'
@@ -30,10 +32,35 @@ const fragment = graphql(`
 export type IReadingNowFragment = FragmentType<typeof fragment>
 
 type Props = {
+	books: (IReadingNowFragment & { id: string })[]
+}
+
+export default function ReadingNow({ books }: Props) {
+	return (
+		<View className="flex items-start gap-4">
+			<Heading size="xl">Jump Back In</Heading>
+
+			<ScrollView
+				horizontal
+				showsHorizontalScrollIndicator={false}
+				className="w-full"
+				pagingEnabled
+			>
+				<View className="flex flex-row gap-4">
+					{books.map((book) => (
+						<ReadingNowItem key={book.id} book={book} />
+					))}
+				</View>
+			</ScrollView>
+		</View>
+	)
+}
+
+type ReadingNowItemProps = {
 	book: IReadingNowFragment
 }
 
-export default function ReadingNow({ book }: Props) {
+function ReadingNowItem({ book }: ReadingNowItemProps) {
 	const data = useFragment(fragment, book)
 	const {
 		activeServer: { id: serverID },
@@ -110,47 +137,48 @@ export default function ReadingNow({ book }: Props) {
 	const router = useRouter()
 
 	return (
-		<View className="flex items-start gap-4">
-			<Heading size="lg">Jump Back In</Heading>
+		<View className="flex flex-row gap-4">
+			<Pressable
+				className="relative aspect-[2/3] shrink-0 overflow-hidden rounded-lg"
+				onPress={() => router.navigate(`/server/${serverID}/books/${data.id}`)}
+			>
+				<LinearGradient
+					colors={['transparent', 'rgba(0, 0, 0, 0.90)']}
+					style={{ position: 'absolute', inset: 0, zIndex: 10, borderRadius: 8 }}
+				/>
 
-			<View className="flex flex-row gap-4">
-				<Pressable
-					className="relative aspect-[2/3] shrink-0 overflow-hidden rounded-lg"
-					onPress={() => router.navigate(`/server/${serverID}/books/${data.id}`)}
-				>
-					<View className="absolute inset-0 z-10 bg-black" style={{ opacity: 0.5 }} />
+				<FasterImage
+					source={{
+						url: data.thumbnail.url,
+						headers: {
+							Authorization: sdk.authorizationHeader || '',
+						},
+						resizeMode: 'fill',
+						borderRadius: 8,
+					}}
+					style={{ height: 400, width: 400 * (2 / 3) }}
+				/>
 
-					<FasterImage
-						source={{
-							url: data.thumbnail.url,
-							headers: {
-								Authorization: sdk.authorizationHeader || '',
-							},
-							resizeMode: 'fill',
-						}}
-						style={{ height: 400, width: 400 * (2 / 3) }}
-					/>
+				<View className="absolute bottom-0 z-20 w-full gap-2 p-2">
+					{!isTablet && (
+						<Text
+							className="text-2xl font-bold leading-8 text-white"
+							style={{
+								textShadowOffset: { width: 2, height: 1 },
+								textShadowRadius: 2,
+								textShadowColor: 'rgba(0, 0, 0, 0.5)',
+								zIndex: 20,
+							}}
+						>
+							{data.resolvedName}
+						</Text>
+					)}
 
-					<View className="absolute bottom-0 z-20 w-full gap-2 p-2">
-						{!isTablet && (
-							<Text
-								className="text-2xl font-bold leading-8 text-white"
-								style={{
-									textShadowOffset: { width: 2, height: 1 },
-									textShadowRadius: 2,
-									textShadowColor: 'rgba(0, 0, 0, 0.5)',
-								}}
-							>
-								{data.resolvedName}
-							</Text>
-						)}
+					{activeBookProgress && <Progress className="h-1" value={activeBookProgress} />}
+				</View>
+			</Pressable>
 
-						{activeBookProgress && <Progress className="h-1" value={activeBookProgress} />}
-					</View>
-				</Pressable>
-
-				{renderBookContent()}
-			</View>
+			{renderBookContent()}
 		</View>
 	)
 }

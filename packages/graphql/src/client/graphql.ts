@@ -1026,6 +1026,7 @@ export type Media = {
    * expected that all media will belong to a series
    */
   seriesId?: Maybe<Scalars['String']['output']>;
+  seriesPosition?: Maybe<Scalars['Int']['output']>;
   /** The size of the media file in bytes */
   size: Scalars['Int']['output'];
   /**
@@ -2226,6 +2227,7 @@ export type Query = {
   mediaMetadataOverview: MediaMetadataOverview;
   numberOfLibraries: Scalars['Int']['output'];
   numberOfSeries: Scalars['Int']['output'];
+  onDeck: PaginatedMediaResponse;
   /**
    * Retrieves a reading list by ID for the current user.
    *
@@ -2371,6 +2373,11 @@ export type QueryMediaByPathArgs = {
 
 export type QueryMediaMetadataOverviewArgs = {
   seriesId?: InputMaybe<Scalars['ID']['input']>;
+};
+
+
+export type QueryOnDeckArgs = {
+  pagination?: Pagination;
 };
 
 
@@ -3406,6 +3413,16 @@ export type ContinueReadingQuery = { __typename?: 'Query', keepReading: { __type
       & { ' $fragmentRefs'?: { 'BookListItemFragment': BookListItemFragment;'ReadingNowFragment': ReadingNowFragment } }
     )>, pageInfo: { __typename: 'CursorPaginationInfo' } | { __typename: 'OffsetPaginationInfo', totalPages: number, currentPage: number, pageSize: number, pageOffset: number, zeroBased: boolean } } };
 
+export type OnDeckBooksQueryVariables = Exact<{
+  pagination?: InputMaybe<Pagination>;
+}>;
+
+
+export type OnDeckBooksQuery = { __typename?: 'Query', onDeck: { __typename?: 'PaginatedMediaResponse', nodes: Array<(
+      { __typename?: 'Media', id: string }
+      & { ' $fragmentRefs'?: { 'OnDeckBookItemFragment': OnDeckBookItemFragment } }
+    )>, pageInfo: { __typename: 'CursorPaginationInfo' } | { __typename: 'OffsetPaginationInfo', totalPages: number, currentPage: number, pageSize: number, pageOffset: number, zeroBased: boolean } } };
+
 export type ReadingNowFragment = { __typename?: 'Media', id: string, resolvedName: string, metadata?: { __typename?: 'MediaMetadata', summary?: string | null, genres: Array<string>, links: Array<string> } | null, thumbnail: { __typename?: 'ImageRef', url: string } } & { ' $fragmentName'?: 'ReadingNowFragment' };
 
 export type RecentlyAddedBooksQueryVariables = Exact<{
@@ -3418,11 +3435,23 @@ export type RecentlyAddedBooksQuery = { __typename?: 'Query', recentlyAddedMedia
       & { ' $fragmentRefs'?: { 'BookListItemFragment': BookListItemFragment } }
     )>, pageInfo: { __typename: 'CursorPaginationInfo', currentCursor?: string | null, nextCursor?: string | null, limit: number } | { __typename: 'OffsetPaginationInfo' } } };
 
+export type RecentlyAddedSeriesHorizontalQueryVariables = Exact<{
+  pagination?: InputMaybe<Pagination>;
+}>;
+
+
+export type RecentlyAddedSeriesHorizontalQuery = { __typename?: 'Query', recentlyAddedSeries: { __typename?: 'PaginatedSeriesResponse', nodes: Array<(
+      { __typename?: 'Series', id: string }
+      & { ' $fragmentRefs'?: { 'RecentlyAddedSeriesItemFragment': RecentlyAddedSeriesItemFragment } }
+    )>, pageInfo: { __typename: 'CursorPaginationInfo', currentCursor?: string | null, nextCursor?: string | null, limit: number } | { __typename: 'OffsetPaginationInfo' } } };
+
 export type BookGridItemFragment = { __typename?: 'Media', id: string, resolvedName: string, thumbnail: { __typename?: 'ImageRef', url: string } } & { ' $fragmentName'?: 'BookGridItemFragment' };
 
 export type BookListItemFragment = { __typename?: 'Media', id: string, resolvedName: string, thumbnail: { __typename?: 'ImageRef', url: string } } & { ' $fragmentName'?: 'BookListItemFragment' };
 
 export type BookSearchItemFragment = { __typename?: 'Media', id: string, resolvedName: string, size: number, pages: number, thumbnail: { __typename?: 'ImageRef', url: string } } & { ' $fragmentName'?: 'BookSearchItemFragment' };
+
+export type OnDeckBookItemFragment = { __typename?: 'Media', id: string, resolvedName: string, seriesPosition?: number | null, thumbnail: { __typename?: 'ImageRef', url: string }, series: { __typename?: 'Series', mediaCount: number } } & { ' $fragmentName'?: 'OnDeckBookItemFragment' };
 
 export type StackedBookThumbnailsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -3499,7 +3528,9 @@ export type RecentlyAddedSeriesGridQueryVariables = Exact<{
 export type RecentlyAddedSeriesGridQuery = { __typename?: 'Query', series: { __typename?: 'PaginatedSeriesResponse', nodes: Array<(
       { __typename?: 'Series', id: string }
       & { ' $fragmentRefs'?: { 'SeriesGridItemFragment': SeriesGridItemFragment } }
-    )>, pageInfo: { __typename: 'CursorPaginationInfo', currentCursor?: string | null, nextCursor?: string | null, limit: number } | { __typename: 'OffsetPaginationInfo' } } };
+    )>, pageInfo: { __typename: 'CursorPaginationInfo' } | { __typename: 'OffsetPaginationInfo', totalPages: number, currentPage: number, pageSize: number, pageOffset: number, zeroBased: boolean } } };
+
+export type RecentlyAddedSeriesItemFragment = { __typename?: 'Series', id: string, resolvedName: string, readCount: number, mediaCount: number, createdAt: any, thumbnail: { __typename?: 'ImageRef', url: string } } & { ' $fragmentName'?: 'RecentlyAddedSeriesItemFragment' };
 
 export type SeriesGridItemFragment = { __typename?: 'Series', id: string, resolvedName: string, thumbnail: { __typename?: 'ImageRef', url: string } } & { ' $fragmentName'?: 'SeriesGridItemFragment' };
 
@@ -4633,6 +4664,19 @@ export const BookSearchItemFragmentDoc = new TypedDocumentString(`
   pages
 }
     `, {"fragmentName":"BookSearchItem"}) as unknown as TypedDocumentString<BookSearchItemFragment, unknown>;
+export const OnDeckBookItemFragmentDoc = new TypedDocumentString(`
+    fragment OnDeckBookItem on Media {
+  id
+  resolvedName
+  thumbnail {
+    url
+  }
+  seriesPosition
+  series {
+    mediaCount
+  }
+}
+    `, {"fragmentName":"OnDeckBookItem"}) as unknown as TypedDocumentString<OnDeckBookItemFragment, unknown>;
 export const BookMenuFragmentDoc = new TypedDocumentString(`
     fragment BookMenu on Media {
   id
@@ -4671,6 +4715,18 @@ export const LibrarySearchItemFragmentDoc = new TypedDocumentString(`
   }
 }
     `, {"fragmentName":"LibrarySearchItem"}) as unknown as TypedDocumentString<LibrarySearchItemFragment, unknown>;
+export const RecentlyAddedSeriesItemFragmentDoc = new TypedDocumentString(`
+    fragment RecentlyAddedSeriesItem on Series {
+  id
+  resolvedName
+  thumbnail {
+    url
+  }
+  readCount
+  mediaCount
+  createdAt
+}
+    `, {"fragmentName":"RecentlyAddedSeriesItem"}) as unknown as TypedDocumentString<RecentlyAddedSeriesItemFragment, unknown>;
 export const SeriesGridItemFragmentDoc = new TypedDocumentString(`
     fragment SeriesGridItem on Series {
   id
@@ -5296,6 +5352,36 @@ fragment BookListItem on Media {
     url
   }
 }`) as unknown as TypedDocumentString<ContinueReadingQuery, ContinueReadingQueryVariables>;
+export const OnDeckBooksDocument = new TypedDocumentString(`
+    query OnDeckBooks($pagination: Pagination) {
+  onDeck(pagination: $pagination) {
+    nodes {
+      id
+      ...OnDeckBookItem
+    }
+    pageInfo {
+      __typename
+      ... on OffsetPaginationInfo {
+        totalPages
+        currentPage
+        pageSize
+        pageOffset
+        zeroBased
+      }
+    }
+  }
+}
+    fragment OnDeckBookItem on Media {
+  id
+  resolvedName
+  thumbnail {
+    url
+  }
+  seriesPosition
+  series {
+    mediaCount
+  }
+}`) as unknown as TypedDocumentString<OnDeckBooksQuery, OnDeckBooksQueryVariables>;
 export const RecentlyAddedBooksDocument = new TypedDocumentString(`
     query RecentlyAddedBooks($pagination: Pagination) {
   recentlyAddedMedia(pagination: $pagination) {
@@ -5320,6 +5406,33 @@ export const RecentlyAddedBooksDocument = new TypedDocumentString(`
     url
   }
 }`) as unknown as TypedDocumentString<RecentlyAddedBooksQuery, RecentlyAddedBooksQueryVariables>;
+export const RecentlyAddedSeriesHorizontalDocument = new TypedDocumentString(`
+    query RecentlyAddedSeriesHorizontal($pagination: Pagination) {
+  recentlyAddedSeries(pagination: $pagination) {
+    nodes {
+      id
+      ...RecentlyAddedSeriesItem
+    }
+    pageInfo {
+      __typename
+      ... on CursorPaginationInfo {
+        currentCursor
+        nextCursor
+        limit
+      }
+    }
+  }
+}
+    fragment RecentlyAddedSeriesItem on Series {
+  id
+  resolvedName
+  thumbnail {
+    url
+  }
+  readCount
+  mediaCount
+  createdAt
+}`) as unknown as TypedDocumentString<RecentlyAddedSeriesHorizontalQuery, RecentlyAddedSeriesHorizontalQueryVariables>;
 export const StackedBookThumbnailsDocument = new TypedDocumentString(`
     query StackedBookThumbnails {
   media(pagination: {cursor: {limit: 1}}) {
@@ -5405,10 +5518,12 @@ export const RecentlyAddedSeriesGridDocument = new TypedDocumentString(`
     }
     pageInfo {
       __typename
-      ... on CursorPaginationInfo {
-        currentCursor
-        nextCursor
-        limit
+      ... on OffsetPaginationInfo {
+        totalPages
+        currentPage
+        pageSize
+        pageOffset
+        zeroBased
       }
     }
   }

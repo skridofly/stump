@@ -3,7 +3,8 @@ import { useCallback, useState } from 'react'
 import { View } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
 
-import { ContinueReading, RecentlyAddedBooks } from '~/components/activeServer/home'
+import { ContinueReading, OnDeck, RecentlyAddedBooks } from '~/components/activeServer/home'
+import RecentlyAddedSeriesHorizontal from '~/components/activeServer/home/RecentlyAddedSeriesHorizontal'
 import RefreshControl from '~/components/RefreshControl'
 
 export default function Screen() {
@@ -24,6 +25,8 @@ export default function Screen() {
 		>
 			<View className="flex flex-1 gap-8 pb-8">
 				<ContinueReading />
+				<OnDeck />
+				<RecentlyAddedSeriesHorizontal />
 				<RecentlyAddedBooks />
 			</View>
 		</ScrollView>
