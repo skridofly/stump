@@ -400,6 +400,7 @@ export type DirectoryListing = {
 export type DirectoryListingFile = {
   __typename?: 'DirectoryListingFile';
   isDirectory: Scalars['Boolean']['output'];
+  media?: Maybe<Media>;
   name: Scalars['String']['output'];
   path: Scalars['String']['output'];
 };
@@ -3344,6 +3345,11 @@ export type BookSearchScreenQuery = { __typename?: 'Query', media: { __typename?
       & { ' $fragmentRefs'?: { 'BookGridItemFragment': BookGridItemFragment } }
     )>, pageInfo: { __typename: 'CursorPaginationInfo', currentCursor?: string | null, nextCursor?: string | null, limit: number } | { __typename: 'OffsetPaginationInfo' } } };
 
+export type LibraryPathsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type LibraryPathsQuery = { __typename?: 'Query', libraries: { __typename?: 'PaginatedLibraryResponse', nodes: Array<{ __typename?: 'Library', id: string, name: string, path: string }> } };
+
 export type LibrarySeriesScreenSeriesNameQueryVariables = Exact<{
   id: Scalars['ID']['input'];
 }>;
@@ -3423,7 +3429,7 @@ export type OnDeckBooksQuery = { __typename?: 'Query', onDeck: { __typename?: 'P
       & { ' $fragmentRefs'?: { 'OnDeckBookItemFragment': OnDeckBookItemFragment } }
     )>, pageInfo: { __typename: 'CursorPaginationInfo' } | { __typename: 'OffsetPaginationInfo', totalPages: number, currentPage: number, pageSize: number, pageOffset: number, zeroBased: boolean } } };
 
-export type ReadingNowFragment = { __typename?: 'Media', id: string, resolvedName: string, metadata?: { __typename?: 'MediaMetadata', summary?: string | null, genres: Array<string>, links: Array<string> } | null, thumbnail: { __typename?: 'ImageRef', url: string } } & { ' $fragmentName'?: 'ReadingNowFragment' };
+export type ReadingNowFragment = { __typename?: 'Media', id: string, resolvedName: string, pages: number, metadata?: { __typename?: 'MediaMetadata', summary?: string | null, genres: Array<string>, links: Array<string> } | null, thumbnail: { __typename?: 'ImageRef', url: string }, readProgress?: { __typename?: 'ActiveReadingSession', epubcfi?: string | null, page?: number | null, percentageCompleted?: any | null, updatedAt?: any | null } | null } & { ' $fragmentName'?: 'ReadingNowFragment' };
 
 export type RecentlyAddedBooksQueryVariables = Exact<{
   pagination?: InputMaybe<Pagination>;
@@ -4601,7 +4607,7 @@ export type DirectoryListingQueryVariables = Exact<{
 }>;
 
 
-export type DirectoryListingQuery = { __typename?: 'Query', listDirectory: { __typename?: 'PaginatedDirectoryListingResponse', nodes: Array<{ __typename?: 'DirectoryListing', parent?: string | null, files: Array<{ __typename?: 'DirectoryListingFile', name: string, path: string, isDirectory: boolean }> }>, pageInfo: { __typename: 'CursorPaginationInfo' } | { __typename: 'OffsetPaginationInfo', currentPage: number, totalPages: number, pageSize: number, pageOffset: number, zeroBased: boolean } } };
+export type DirectoryListingQuery = { __typename?: 'Query', listDirectory: { __typename?: 'PaginatedDirectoryListingResponse', nodes: Array<{ __typename?: 'DirectoryListing', parent?: string | null, files: Array<{ __typename?: 'DirectoryListingFile', name: string, path: string, isDirectory: boolean, media?: { __typename?: 'Media', id: string, resolvedName: string, extension: string, thumbnail: { __typename?: 'ImageRef', url: string } } | null }> }>, pageInfo: { __typename: 'CursorPaginationInfo' } | { __typename: 'OffsetPaginationInfo', currentPage: number, totalPages: number, pageSize: number, pageOffset: number, zeroBased: boolean } } };
 
 export type UploadConfigQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -4637,6 +4643,13 @@ export const ReadingNowFragmentDoc = new TypedDocumentString(`
   }
   thumbnail {
     url
+  }
+  pages
+  readProgress {
+    epubcfi
+    page
+    percentageCompleted
+    updatedAt
   }
 }
     `, {"fragmentName":"ReadingNow"}) as unknown as TypedDocumentString<ReadingNowFragment, unknown>;
@@ -5204,6 +5217,17 @@ export const BookSearchScreenDocument = new TypedDocumentString(`
     url
   }
 }`) as unknown as TypedDocumentString<BookSearchScreenQuery, BookSearchScreenQueryVariables>;
+export const LibraryPathsDocument = new TypedDocumentString(`
+    query LibraryPaths {
+  libraries(pagination: {none: {unpaginated: true}}) {
+    nodes {
+      id
+      name
+      path
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<LibraryPathsQuery, LibraryPathsQueryVariables>;
 export const LibrarySeriesScreenSeriesNameDocument = new TypedDocumentString(`
     query LibrarySeriesScreenSeriesName($id: ID!) {
   libraryById(id: $id) {
@@ -5348,6 +5372,13 @@ export const ContinueReadingDocument = new TypedDocumentString(`
   }
   thumbnail {
     url
+  }
+  pages
+  readProgress {
+    epubcfi
+    page
+    percentageCompleted
+    updatedAt
   }
 }
 fragment BookListItem on Media {
@@ -7737,6 +7768,14 @@ export const DirectoryListingDocument = new TypedDocumentString(`
         name
         path
         isDirectory
+        media {
+          id
+          resolvedName
+          thumbnail {
+            url
+          }
+          extension
+        }
       }
     }
     pageInfo {

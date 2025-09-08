@@ -16,6 +16,14 @@ const query = graphql(`
 					name
 					path
 					isDirectory
+					media {
+						id
+						resolvedName
+						thumbnail {
+							url
+						}
+						extension
+					}
 				}
 			}
 			pageInfo {
