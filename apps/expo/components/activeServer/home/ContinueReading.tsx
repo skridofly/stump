@@ -84,7 +84,9 @@ function ContinueReading() {
 						onEndReached={onEndReached}
 						onEndReachedThreshold={0.85}
 						showsHorizontalScrollIndicator={false}
-						ListEmptyComponent={<Text className="text-foreground-muted">No books in progress</Text>}
+						ListEmptyComponent={
+							<Text className="px-4 text-foreground-muted">No books in progress</Text>
+						}
 					/>
 				</View>
 			)}

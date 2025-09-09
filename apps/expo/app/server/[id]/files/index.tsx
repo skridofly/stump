@@ -9,6 +9,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { useActiveServer } from '~/components/activeServer'
 import { Text } from '~/components/ui'
+import { useDisplay } from '~/lib/hooks'
 
 const query = graphql(`
 	query LibraryPaths {
@@ -32,7 +33,10 @@ export default function Screen() {
 		},
 	} = useSuspenseGraphQL(query, ['libraryPaths'])
 
+	const { isTablet, isLandscapeTablet } = useDisplay()
 	// const {} = useGridItemSize // TODO: Port for files grid bc different
+
+	const cols = isTablet ? (isLandscapeTablet ? 5 : 4) : 3
 
 	const router = useRouter()
 
@@ -43,7 +47,7 @@ export default function Screen() {
 		>
 			<FlashList
 				data={libraries}
-				numColumns={3}
+				numColumns={cols}
 				renderItem={({ item }) => (
 					<Pressable
 						onPress={() =>

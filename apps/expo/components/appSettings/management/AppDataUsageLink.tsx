@@ -25,25 +25,21 @@ export default function AppDataUsageLink() {
 	const router = useRouter()
 
 	return (
-		<AppSettingsRow icon="HardDrive" title="Data usage">
-			<Pressable
-				onPress={() =>
-					router.push({
-						pathname: '/(tabs)/settings/usage',
-					})
-				}
-			>
-				{({ pressed }) => (
-					<View
-						className={cn('flex flex-row items-center gap-2', {
-							'opacity-80': pressed,
-						})}
-					>
-						<Text className="text-foreground-muted">{formattedSize}</Text>
-						<ChevronRight size={20} className="text-foreground-muted" />
-					</View>
-				)}
-			</Pressable>
+		<AppSettingsRow
+			icon="HardDrive"
+			title="Data usage"
+			divide={false}
+			isLink
+			onPress={() =>
+				router.push({
+					pathname: '/(tabs)/settings/usage',
+				})
+			}
+		>
+			<View className={cn('flex flex-row items-center gap-2')}>
+				<Text className="text-foreground-muted">{formattedSize}</Text>
+				<ChevronRight size={20} className="text-foreground-muted" />
+			</View>
 		</AppSettingsRow>
 	)
 }

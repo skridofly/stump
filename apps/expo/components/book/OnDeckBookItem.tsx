@@ -11,6 +11,7 @@ import { COLORS } from '~/lib/constants'
 import { useActiveServer } from '../activeServer'
 import { FasterImage } from '../Image'
 import { Text } from '../ui'
+import { useListItemSize } from '~/lib/hooks'
 
 const fragment = graphql(`
 	fragment OnDeckBookItem on Media {
@@ -40,6 +41,8 @@ function OnDeckBookItem({ book }: Props) {
 		activeServer: { id: serverID },
 	} = useActiveServer()
 
+	const { height, width } = useListItemSize()
+
 	const router = useRouter()
 
 	return (
@@ -67,7 +70,7 @@ function OnDeckBookItem({ book }: Props) {
 							// FIXME: I REALLY shouldn't have to do this
 							borderRadius: Platform.OS === 'android' ? 24 : 8,
 						}}
-						style={{ width: 200 * (2 / 3), height: 200 }}
+						style={{ width, height }}
 					/>
 
 					<View className="absolute bottom-0 z-20 w-full gap-1 p-2">

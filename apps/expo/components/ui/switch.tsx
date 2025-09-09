@@ -87,7 +87,7 @@ const SwitchNative = React.forwardRef<SwitchPrimitives.RootRef, Props>(
 			>
 				<SwitchPrimitives.Root
 					className={cn(
-						'shrink-0 flex-row items-center rounded-full border-2 border-transparent',
+						'shrink-0 flex-row items-center rounded-full border border-transparent',
 						resolvedSize.root,
 						props.checked ? 'bg-primary' : 'bg-input',
 						className,

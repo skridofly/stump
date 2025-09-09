@@ -140,7 +140,8 @@ function ReadingNowItem({ book }: ReadingNowItemProps) {
 			width -
 			16 * 2 - // page padding
 			400 * (2 / 3) - // image width
-			16 // gap between image and text
+			16 - // gap between image and text
+			60 // gap between other carousel items
 
 		const description = data.metadata?.summary || ''
 		const genres = data.metadata?.genres?.map((genre) => `#${genre}`).join(', ')
