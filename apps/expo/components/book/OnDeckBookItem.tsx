@@ -52,8 +52,9 @@ function OnDeckBookItem({ book }: Props) {
 					}}
 				>
 					<LinearGradient
-						colors={['transparent', 'rgba(0, 0, 0, 0.85)']}
+						colors={['transparent', 'rgba(0, 0, 0, 0.9)']}
 						style={{ position: 'absolute', inset: 0, zIndex: 10, borderRadius: 8 }}
+						locations={[0.4, 1]}
 					/>
 
 					<FasterImage
@@ -83,6 +84,7 @@ function OnDeckBookItem({ book }: Props) {
 						>
 							{data.resolvedName}
 						</Text>
+
 						{data.seriesPosition != null && (
 							<Text
 								className="flex-1 flex-wrap text-sm font-medium"
@@ -95,7 +97,7 @@ function OnDeckBookItem({ book }: Props) {
 								}}
 								numberOfLines={0}
 							>
-								{data.seriesPosition} of {data.series?.mediaCount ?? '?'}
+								Book {data.seriesPosition} of {data.series?.mediaCount ?? '?'}
 							</Text>
 						)}
 					</View>

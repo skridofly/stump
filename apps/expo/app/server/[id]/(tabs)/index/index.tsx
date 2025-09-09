@@ -26,7 +26,7 @@ export default function Screen() {
 		<ScrollView
 			className="flex-1 bg-background p-4"
 			refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-			contentInsetAdjustmentBehavior="automatic"
+			contentInsetAdjustmentBehavior="always"
 		>
 			<View className="flex flex-1 gap-8 pb-8">
 				<ContinueReading />

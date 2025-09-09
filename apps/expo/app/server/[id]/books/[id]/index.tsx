@@ -16,6 +16,7 @@ import { BookDescription, InfoRow, InfoSection, InfoStat } from '~/components/bo
 import { FasterImage } from '~/components/Image'
 import RefreshControl from '~/components/RefreshControl'
 import { Button, Heading, icons, Text } from '~/components/ui'
+import { useColors } from '~/lib/constants'
 import { formatBytes, parseGraphQLDecimal } from '~/lib/format'
 import { cn } from '~/lib/utils'
 
@@ -127,7 +128,7 @@ export default function Screen() {
 				<ChevronLeft className="text-foreground" onPress={() => navigation.goBack()} />
 			),
 			headerRight: () => (book ? <BookActionMenu data={book} /> : null),
-			headerTitle: Platform.OS === 'ios' ? book?.resolvedName : '',
+			// headerTitle: Platform.OS === 'ios' ? book?.resolvedName : '',
 		})
 	}, [navigation, book, bookID])
 
@@ -148,6 +149,8 @@ export default function Screen() {
 	const seriesVolume = book.metadata?.volume
 
 	const noMetadata = !description && !seriesName && !genres && !characters
+
+	const colors = useColors()
 
 	const publisher = book.metadata?.publisher
 	const writers = book.metadata?.writers?.join(', ')
@@ -239,12 +242,7 @@ export default function Screen() {
 						</View>
 					)}
 					<View className="flex items-center gap-4">
-						{Platform.OS === 'android' && (
-							<Heading size="lg" className="leading-6">
-								{book.resolvedName}
-							</Heading>
-						)}
-						<View className="aspect-[2/3] self-center overflow-hidden rounded-lg">
+						<View className="aspect-[2/3] self-center">
 							<FasterImage
 								source={{
 									url: book.thumbnail.url,
@@ -252,11 +250,26 @@ export default function Screen() {
 										Authorization: sdk.authorizationHeader || '',
 									},
 									resizeMode: 'fill',
+									borderRadius: 8,
 								}}
-								style={{ height: 350, width: 'auto' }}
+								style={{
+									height: 350,
+									width: 'auto',
+									shadowColor: '#000',
+									shadowOffset: { width: 0, height: 1 },
+									shadowOpacity: 0.1,
+									shadowRadius: 0.9,
+									borderRadius: 8,
+									borderWidth: 0.2,
+									borderColor: colors.edge.DEFAULT,
+								}}
 							/>
 						</View>
 					</View>
+
+					<Heading size="lg" className="text-center leading-6">
+						{book.resolvedName}
+					</Heading>
 
 					<View className="flex w-full flex-row items-center gap-x-2 tablet:max-w-sm tablet:self-center">
 						<Button

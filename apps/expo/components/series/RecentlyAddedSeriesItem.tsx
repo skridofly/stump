@@ -45,12 +45,20 @@ export default function RecentlyAddedSeriesItem({ series }: Props) {
 
 	return (
 		<Pressable
-			className="relative shrink-0 overflow-hidden rounded-lg"
+			className="relative shrink-0"
 			onPress={() => router.push(`/server/${serverID}/series/${data.id}`)}
+			style={{
+				shadowColor: '#000',
+				shadowOffset: { width: 0, height: 1 },
+				shadowOpacity: 0.2,
+				shadowRadius: 1.41,
+				borderRadius: 8,
+			}}
 		>
 			<LinearGradient
-				colors={['transparent', 'rgba(0, 0, 0, 0.80)']}
+				colors={['transparent', 'rgba(0, 0, 0, 0.90)']}
 				style={{ position: 'absolute', inset: 0, zIndex: 10, borderRadius: 8 }}
+				locations={[0.5, 1]}
 			/>
 
 			<FasterImage

@@ -1,5 +1,6 @@
 import { Stack } from 'expo-router'
 import { Platform } from 'react-native'
+import { ENABLE_LARGE_HEADER } from '~/lib/constants'
 
 import { usePreferencesStore } from '~/stores'
 
@@ -15,7 +16,7 @@ export default function Screen() {
 					headerLargeTitleStyle: {
 						fontSize: 24,
 					},
-					headerLargeTitle: true,
+					headerLargeTitle: ENABLE_LARGE_HEADER,
 					headerBlurEffect: 'regular',
 					animation: animationEnabled ? 'default' : 'none',
 				}}

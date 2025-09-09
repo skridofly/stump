@@ -187,8 +187,13 @@ export default function Screen() {
 			NavigationBar.setVisibilityAsync('hidden')
 			return () => {
 				NavigationBar.setVisibilityAsync('visible')
-				queryClient.refetchQueries({ queryKey: ['bookById', bookID], exact: false })
-				queryClient.refetchQueries({ queryKey: ['continueReading'], exact: false })
+				Promise.all([
+					queryClient.refetchQueries({ queryKey: ['bookById', bookID], exact: false }),
+					queryClient.refetchQueries({ queryKey: ['continueReading'], exact: false }),
+					queryClient.refetchQueries({ queryKey: ['onDeck'], exact: false }),
+					queryClient.refetchQueries({ queryKey: ['recentlyAddedBooks'], exact: false }),
+					queryClient.refetchQueries({ queryKey: ['recentlyAddedSeries'], exact: false }),
+				])
 			}
 		},
 		// eslint-disable-next-line react-hooks/exhaustive-deps

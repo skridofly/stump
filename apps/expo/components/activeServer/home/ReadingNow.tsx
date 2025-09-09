@@ -2,15 +2,16 @@ import { useSDK } from '@stump/client'
 import { FragmentType, graphql, useFragment } from '@stump/graphql'
 import dayjs from 'dayjs'
 import { useRouter } from 'expo-router'
-import { useCallback } from 'react'
+import { useCallback, useRef } from 'react'
 import { Pressable, View } from 'react-native'
-import { ScrollView } from 'react-native-gesture-handler'
+import Carousel, { ICarouselInstance, Pagination } from 'react-native-reanimated-carousel'
+import { useSharedValue } from 'react-native-reanimated'
 import LinearGradient from 'react-native-linear-gradient'
 
 import { BookMetaLink } from '~/components/book'
 import { FasterImage } from '~/components/Image'
 import { Heading, Progress, Text } from '~/components/ui'
-import { COLORS } from '~/lib/constants'
+import { COLORS, useColors } from '~/lib/constants'
 import { parseGraphQLDecimal } from '~/lib/format'
 import { useDisplay } from '~/lib/hooks'
 
@@ -45,22 +46,66 @@ type Props = {
 }
 
 export default function ReadingNow({ books }: Props) {
+	const { width } = useDisplay()
+
+	const colors = useColors()
+	const carouselRef = useRef<ICarouselInstance>(null)
+	const progressValue = useSharedValue<number>(0)
+
+	const onPressPagination = (index: number) => {
+		carouselRef.current?.scrollTo({
+			count: index - progressValue.value,
+			animated: true,
+		})
+	}
+
 	return (
 		<View className="flex items-start gap-4">
-			<Heading size="xl">Jump Back In</Heading>
+			{/* <Heading size="xl">Jump Back In</Heading> */}
 
-			<ScrollView
-				horizontal
-				showsHorizontalScrollIndicator={false}
-				className="w-full"
-				pagingEnabled
-			>
-				<View className="flex flex-row gap-4">
-					{books.map((book) => (
-						<ReadingNowItem key={book.id} book={book} />
-					))}
-				</View>
-			</ScrollView>
+			<View className="w-full">
+				<Carousel
+					ref={carouselRef}
+					width={width}
+					height={400}
+					data={books}
+					loop={false}
+					mode="parallax"
+					modeConfig={{
+						parallaxScrollingScale: 0.98,
+					}}
+					onProgressChange={progressValue}
+					renderItem={({ item }) => (
+						<View
+							style={{
+								flex: 1,
+								justifyContent: 'center',
+							}}
+						>
+							<ReadingNowItem book={item} />
+						</View>
+					)}
+				/>
+
+				<Pagination.Basic
+					progress={progressValue}
+					data={books}
+					dotStyle={{
+						width: 8,
+						height: 8,
+						borderRadius: 4,
+						backgroundColor: colors.dots.inactive,
+					}}
+					activeDotStyle={{
+						backgroundColor: colors.dots.active,
+					}}
+					containerStyle={{
+						marginTop: 16,
+						gap: 6,
+					}}
+					onPress={onPressPagination}
+				/>
+			</View>
 		</View>
 	)
 }
@@ -148,12 +193,19 @@ function ReadingNowItem({ book }: ReadingNowItemProps) {
 	return (
 		<View className="flex flex-row gap-4">
 			<Pressable
-				className="relative aspect-[2/3] shrink-0 overflow-hidden rounded-lg"
+				className="relative aspect-[2/3] shrink-0 rounded-lg"
 				onPress={() => router.navigate(`/server/${serverID}/books/${data.id}`)}
+				style={{
+					shadowColor: '#000',
+					shadowOffset: { width: 0, height: 1 },
+					shadowOpacity: 0.2,
+					shadowRadius: 1.41,
+				}}
 			>
 				<LinearGradient
 					colors={['transparent', 'rgba(0, 0, 0, 0.90)']}
 					style={{ position: 'absolute', inset: 0, zIndex: 10, borderRadius: 8 }}
+					locations={[0.5, 1]}
 				/>
 
 				<FasterImage
@@ -165,7 +217,10 @@ function ReadingNowItem({ book }: ReadingNowItemProps) {
 						resizeMode: 'fill',
 						borderRadius: 8,
 					}}
-					style={{ height: 400, width: 400 * (2 / 3) }}
+					style={{
+						height: 400,
+						width: 400 * (2 / 3),
+					}}
 				/>
 
 				<View className="absolute bottom-0 z-20 w-full gap-2 p-2">
@@ -194,7 +249,7 @@ function ReadingNowItem({ book }: ReadingNowItemProps) {
 										opacity: 0.9,
 									}}
 								>
-									{data.readProgress?.page} of {data.pages}
+									Page {data.readProgress?.page} of {data.pages}
 								</Text>
 							)}
 

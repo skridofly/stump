@@ -53,6 +53,9 @@
 		--sidebar-inverse: #000000;
 		--sidebar-overlay: #ffffff;
 		--sidebar-overlay-hover: #f6f6f7;
+
+		--dots-active: #414347;
+		--dots-inactive: #d3d5d7;
 	}
 
 	.dark:root {
@@ -102,5 +105,8 @@
 		--sidebar-inverse: #ffffff;
 		--sidebar-overlay: #151517;
 		--sidebar-overlay-hover: #17171a;
+
+		--dots-active: #f5f3ef;
+		--dots-inactive: #898d94;
 	}
 }

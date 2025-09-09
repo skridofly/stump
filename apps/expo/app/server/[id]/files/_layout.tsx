@@ -2,6 +2,7 @@ import { Stack, useNavigation } from 'expo-router'
 import { Platform } from 'react-native'
 
 import { icons } from '~/lib'
+import { ENABLE_LARGE_HEADER } from '~/lib/constants'
 import { usePreferencesStore } from '~/stores'
 const { ChevronLeft } = icons
 
@@ -32,7 +33,7 @@ export default function Screen() {
 						fontSize: 24,
 					},
 					headerBlurEffect: 'regular',
-					headerLargeTitle: true,
+					headerLargeTitle: ENABLE_LARGE_HEADER,
 				}}
 			/>
 
@@ -44,7 +45,7 @@ export default function Screen() {
 					headerTransparent: Platform.OS === 'ios',
 					headerBlurEffect: 'regular',
 				}}
-				getId={({ params }) => (params as { path: string }).path as string}
+				dangerouslySingular
 			/>
 		</Stack>
 	)

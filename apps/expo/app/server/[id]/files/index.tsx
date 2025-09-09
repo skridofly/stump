@@ -71,7 +71,8 @@ export default function Screen() {
 						)}
 					</Pressable>
 				)}
-				contentInsetAdjustmentBehavior="automatic"
+				contentInsetAdjustmentBehavior="always"
+				contentContainerStyle={{ padding: 8 }}
 			/>
 		</SafeAreaView>
 	)
