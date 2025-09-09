@@ -78,7 +78,9 @@ const query = graphql(`
 			resolvedName
 			series {
 				resolvedName
+				mediaCount
 			}
+			seriesPosition
 			size
 			thumbnail {
 				url
@@ -91,8 +93,10 @@ type ActiveReadingSession = NonNullable<
 	NonNullable<Pick<NonNullable<BookByIdQuery['mediaById']>, 'readProgress'>>['readProgress']
 >
 
-// TODO: Figure out what to do with this header shit. It looks OK on Apple
-// but couldn't get anything similar working on Android
+// TODO: I think we can rethink some of this information arch. I originally just kinda dumped
+// all of the metadata on the page but I think we can definitely curate some of it better to be
+// prettier. Like {seriesPosition} of {series.mediaCount} in {seriesName} instead of just dumping
+// the series-related metadata in a list.
 
 export default function Screen() {
 	const { id: bookID } = useLocalSearchParams<{ id: string }>()
@@ -241,6 +245,7 @@ export default function Screen() {
 							<BookActionMenu data={book} />
 						</View>
 					)}
+
 					<View className="flex items-center gap-4">
 						<View className="aspect-[2/3] self-center">
 							<FasterImage
@@ -257,8 +262,8 @@ export default function Screen() {
 									width: 'auto',
 									shadowColor: '#000',
 									shadowOffset: { width: 0, height: 1 },
-									shadowOpacity: 0.1,
-									shadowRadius: 0.9,
+									shadowOpacity: 0.2,
+									shadowRadius: 5,
 									borderRadius: 8,
 									borderWidth: 0.2,
 									borderColor: colors.edge.DEFAULT,
@@ -267,9 +272,17 @@ export default function Screen() {
 						</View>
 					</View>
 
-					<Heading size="lg" className="text-center leading-6">
-						{book.resolvedName}
-					</Heading>
+					<View className="gap-2">
+						<Heading size="lg" className="text-center leading-6">
+							{book.resolvedName}
+						</Heading>
+
+						{seriesName && book.seriesPosition != null && (
+							<Text className="text-center text-base text-foreground-muted">
+								{book.seriesPosition} of {book.series.mediaCount} in {seriesName}
+							</Text>
+						)}
+					</View>
 
 					<View className="flex w-full flex-row items-center gap-x-2 tablet:max-w-sm tablet:self-center">
 						<Button

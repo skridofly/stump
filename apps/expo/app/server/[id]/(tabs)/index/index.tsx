@@ -28,7 +28,7 @@ export default function Screen() {
 			refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
 			contentInsetAdjustmentBehavior="always"
 		>
-			<View className="flex flex-1 gap-8 pb-8">
+			<View className="flex flex-1 gap-8 pb-8 pt-4">
 				<ContinueReading />
 				<OnDeck />
 				<RecentlyAddedSeriesHorizontal />

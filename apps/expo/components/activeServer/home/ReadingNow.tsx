@@ -75,6 +75,13 @@ export default function ReadingNow({ books }: Props) {
 						parallaxScrollingScale: 0.98,
 					}}
 					onProgressChange={progressValue}
+					// Note: I added this to fix vertical scroll conflicts
+					onConfigurePanGesture={(pan) => {
+						pan.activeOffsetX([-10, 10])
+						pan.failOffsetY([-5, 5])
+						return pan
+					}}
+					snapEnabled={true}
 					renderItem={({ item }) => (
 						<View
 							style={{
@@ -190,6 +197,7 @@ function ReadingNowItem({ book }: ReadingNowItemProps) {
 	}, [isTablet, width, data])
 
 	const router = useRouter()
+	const isEbookProgress = !!data.readProgress?.epubcfi
 
 	return (
 		<View className="flex flex-row gap-4">
@@ -242,7 +250,7 @@ function ReadingNowItem({ book }: ReadingNowItemProps) {
 
 					<View className="flex items-start gap-2">
 						<View className="flex w-full flex-row items-center justify-between">
-							{!!data.readProgress?.page && data.readProgress.page > 0 && (
+							{!isEbookProgress && !!data.readProgress?.page && data.readProgress.page > 0 && (
 								<Text
 									className="flex-wrap text-base"
 									style={{
@@ -254,7 +262,7 @@ function ReadingNowItem({ book }: ReadingNowItemProps) {
 								</Text>
 							)}
 
-							{!!data.readProgress?.epubcfi && percentageCompleted != null && (
+							{isEbookProgress && percentageCompleted != null && (
 								<Text
 									className="flex-wrap text-base"
 									style={{
