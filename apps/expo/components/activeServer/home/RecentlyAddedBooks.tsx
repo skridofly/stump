@@ -58,13 +58,18 @@ function RecentlyAddedBooks() {
 
 	return (
 		<View className="flex gap-4">
-			<Heading size="xl">Recently Added Books</Heading>
+			<Heading size="xl" className="px-4">
+				Recently Added Books
+			</Heading>
 
 			<FlashList
 				data={nodes}
 				keyExtractor={({ id }) => id}
 				renderItem={renderItem}
 				horizontal
+				contentContainerStyle={{
+					paddingHorizontal: 16,
+				}}
 				onEndReached={onEndReached}
 				onEndReachedThreshold={0.85}
 				showsHorizontalScrollIndicator={false}

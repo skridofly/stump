@@ -72,7 +72,9 @@ function ContinueReading() {
 
 			{(leftOffBooks.length > 0 || activeBooks.length === 0) && (
 				<View className="flex gap-4">
-					<Heading size="xl">Continue Reading</Heading>
+					<Heading size="xl" className="px-4">
+						Continue Reading
+					</Heading>
 
 					<FlashList
 						data={leftOffBooks}

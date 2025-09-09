@@ -24,7 +24,7 @@ export default function Screen() {
 
 	return (
 		<ScrollView
-			className="flex-1 bg-background p-4"
+			className="flex-1 bg-background"
 			refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
 			contentInsetAdjustmentBehavior="always"
 		>
