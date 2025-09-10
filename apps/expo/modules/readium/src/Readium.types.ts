@@ -23,7 +23,6 @@ export type ReadiumLocator = {
 		before?: string
 		highlight?: string
 	}
-	epubcfi?: string
 }
 
 export type ReadiumLink = {
@@ -31,7 +30,7 @@ export type ReadiumLink = {
 	type?: string
 	title?: string
 	rel?: string | string[]
-	properties?: Record<string, any>
+	properties?: Record<string, unknown>
 }
 
 export type ReadiumManifest = {
@@ -60,12 +59,13 @@ export type OnPageChangeEventPayload = {
 	totalPages: number
 	progress: number
 	chapterTitle?: string
-	epubcfi?: string // EPUB Content File Identifier
+	// FIXME: Uh oh: https://github.com/readium/swift-toolkit/issues/467#issuecomment-2263479610
+	// epubcfi?: string
+	rawLocation: ReadiumLocator
 }
 
 export type ReadiumModuleEvents = {
 	onChange: (params: ChangeEventPayload) => void
-	onPageChange: (params: OnPageChangeEventPayload) => void
 	onBookLoaded: (params: { success: boolean; error?: string; bookMetadata?: BookMetadata }) => void
 	onLocatorChange: (params: ReadiumLocator) => void
 	onMiddleTouch: () => void
@@ -105,6 +105,7 @@ export type EPUBReaderThemeConfig = {
 	colors?: {
 		background: string
 		foreground: string
+		// highlight: string
 	}
 }
 
@@ -117,6 +118,7 @@ export type ReadiumViewProps = {
 	bookId: string
 	url: string
 	locator?: ReadiumLocator
+	initialLocator?: ReadiumLocator
 	onLoad?: (event: { nativeEvent: OnLoadEventPayload }) => void
 	onPageChange?: (event: { nativeEvent: OnPageChangeEventPayload }) => void
 	onBookLoaded?: (event: {

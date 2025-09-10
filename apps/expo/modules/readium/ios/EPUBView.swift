@@ -8,6 +8,7 @@ import ReadiumInternal
 public struct Props {
     var bookId: String?
     var locator: Locator?
+    var initialLocator: Locator?
     var url: String?
     var foreground: Color?
     var background: Color?
@@ -20,6 +21,7 @@ public struct Props {
 public struct FinalizedProps {
     var bookId: String
     var locator: Locator
+    var initialLocator: Locator?
     var url: String
     var foreground: Color
     var background: Color
@@ -65,6 +67,7 @@ public class EPUBView: ExpoView {
         props = FinalizedProps(
             bookId: bookId,
             locator: pendingProps.locator ?? oldProps?.locator ?? defaultLocator,
+            initialLocator: pendingProps.initialLocator ?? oldProps?.initialLocator,
             url: url,
             foreground: pendingProps.foreground ?? oldProps?.foreground ?? Color(hex: "#111111")!,
             background: pendingProps.background ?? oldProps?.background ?? Color(hex: "#FFFFFF")!,
@@ -154,9 +157,10 @@ public class EPUBView: ExpoView {
         ]
 
         do {
+            let initialLocation = props.initialLocator ?? props.locator
             let navigator = try EPUBNavigatorViewController(
                 publication: publication,
-                initialLocation: props.locator,
+                initialLocation: initialLocation,
                 config: .init(
                     preferences: EPUBPreferences(
                         backgroundColor: props.background,

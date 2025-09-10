@@ -97,6 +97,13 @@ public class ReadiumModule: Module {
                 view.pendingProps.locator = locator
             }
 
+            Prop("initialLocator") { (view: EPUBView, prop: [String : Any]) in
+                guard let locator = try? Locator(json: prop) else {
+                    return
+                }
+                view.pendingProps.initialLocator = locator
+            }
+
             Prop("url") { (view: EPUBView, prop: String) in
                 view.pendingProps.url = prop
             }

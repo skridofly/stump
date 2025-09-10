@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
+import { useActiveServer } from '~/components/activeServer'
 import { useColors } from '~/lib/constants'
 import { ReadiumLocator, ReadiumView } from '~/modules/readium'
 import { useReaderStore } from '~/stores'
@@ -19,19 +20,27 @@ type Props = {
 	 */
 	book: EbookReaderBookRef
 	/**
-	 * The initial CFI to start the reader on
+	 * The initial locator to start the reader on
 	 */
-	initialCfi?: string
+	initialLocator?: ReadiumLocator
 	/**
 	 * Whether the reader should be in incognito mode
 	 */
 	incognito?: boolean
 
-	onEpubCfiChanged: (cfi: string, percentage: number) => void
+	onLocationChanged: (locator: ReadiumLocator, percentage: number) => void
 }
 
 // TODO: Figure out epubcfi handling, that will "unlock" the rest of these unused props
-export default function ReadiumReader({ book, initialCfi, incognito, onEpubCfiChanged }: Props) {
+export default function ReadiumReader({
+	book,
+	initialLocator,
+	incognito,
+	onLocationChanged,
+}: Props) {
+	const {
+		activeServer: { id },
+	} = useActiveServer()
 	const { downloadBook } = useDownload()
 
 	const [localUri, setLocalUri] = useState<string | null>(null)
@@ -91,6 +100,20 @@ export default function ReadiumReader({ book, initialCfi, incognito, onEpubCfiCh
 		[],
 	)
 
+	const handleLocationChanged = useCallback(
+		(locator: ReadiumLocator) => {
+			// onLocationChanged(locator, locator.progress)
+			store.onLocationChange(locator)
+
+			const totalProgression = locator.locations?.totalProgression
+
+			if (!incognito && totalProgression != null) {
+				onLocationChanged(locator, totalProgression)
+			}
+		},
+		[onLocationChanged, incognito, store],
+	)
+
 	const handleMiddleTouch = useCallback(() => {
 		setControlsVisible(!controlsVisible)
 	}, [controlsVisible, setControlsVisible])
@@ -110,14 +133,15 @@ export default function ReadiumReader({ book, initialCfi, incognito, onEpubCfiCh
 
 	return (
 		<View style={{ flex: 1 }}>
-			<ReadiumHeader />
+			<ReadiumHeader settingsUrl={`/server/${id}/books/${book.id}/ebook-settings`} />
 
 			<ReadiumView
 				bookId={book.id}
 				url={localUri}
+				initialLocator={initialLocator}
 				// TODO: This doesn't actually work lol
 				onBookLoaded={({ nativeEvent }) => store.onBookLoad(nativeEvent.bookMetadata)}
-				onLocatorChange={({ nativeEvent }) => store.onLocationChange(nativeEvent)}
+				onLocatorChange={({ nativeEvent: locator }) => handleLocationChanged(locator)}
 				onMiddleTouch={handleMiddleTouch}
 				onSelection={handleSelection}
 				style={{

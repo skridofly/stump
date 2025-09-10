@@ -13,9 +13,10 @@ import * as NavigationBar from 'expo-navigation-bar'
 import { useLocalSearchParams } from 'expo-router'
 import { useCallback, useEffect, useMemo } from 'react'
 
-import { ReadiumReader, ImageBasedReader, UnsupportedReader } from '~/components/book/reader'
+import { ImageBasedReader, ReadiumReader, UnsupportedReader } from '~/components/book/reader'
 import { NextInSeriesBookRef } from '~/components/book/reader/image/context'
 import { useAppState } from '~/lib/hooks'
+import { ReadiumLocator } from '~/modules/readium'
 import { useReaderStore } from '~/stores'
 import { useBookPreferences, useBookTimer } from '~/stores/reader'
 
@@ -124,18 +125,19 @@ export default function Screen() {
 		[book.id, totalSeconds, updateProgress],
 	)
 
-	const onEpubCfiChanged = useCallback(
-		(cfi: string, percentage: number) => {
-			updateProgress({
-				id: book.id,
-				input: {
-					epub: {
-						epubcfi: cfi,
-						elapsedSeconds: totalSeconds,
-						percentage,
-					},
-				},
-			})
+	const onLocationChanged = useCallback(
+		(locator: ReadiumLocator, percentage: number) => {
+			// updateProgress({
+			// 	id: book.id,
+			// 	input: {
+			// 		epub: {
+			// 			epubcfi: cfi,
+			// 			elapsedSeconds: totalSeconds,
+			// 			percentage,
+			// 		},
+			// 	},
+			// })
+			console.warn('TODO: Handle Locator change changes', { locator, percentage })
 		},
 		[book.id, totalSeconds, updateProgress],
 	)
@@ -204,19 +206,25 @@ export default function Screen() {
 
 	if (book.extension.match(EBOOK_EXTENSION)) {
 		const currentProgressCfi = book.readProgress?.epubcfi || undefined
-		// const initialCfi = restart ? undefined : currentProgressCfi
-		// return (
-		// 	<EpubJSReader
-		// 		book={book}
-		// 		initialCfi={currentProgressCfi} /*incognito={incognito}*/
-		// 		onEpubCfiChanged={onEpubCfiChanged}
-		// 	/>
-		// )
+
+		// TODO: This is a temporary solution until the backend provides full ReadiumLocator
+		// The folks on GitHub say it won't work but why the hell not try ig
+		const initialLocator: ReadiumLocator | undefined = currentProgressCfi
+			? {
+					chapterTitle: '',
+					href: '',
+					type: 'application/xhtml+xml',
+					locations: {
+						partialCfi: currentProgressCfi,
+					},
+				}
+			: undefined
+
 		return (
 			<ReadiumReader
 				book={book}
-				initialCfi={currentProgressCfi}
-				onEpubCfiChanged={onEpubCfiChanged}
+				initialLocator={initialLocator}
+				onLocationChanged={onLocationChanged}
 			/>
 		)
 	} else if (book.extension.match(ARCHIVE_EXTENSION) || book.extension.match(PDF_EXTENSION)) {
