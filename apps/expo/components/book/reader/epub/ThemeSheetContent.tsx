@@ -1,8 +1,10 @@
 import { View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
-import { Brightness, ThemeSelect } from './controls'
+import { Brightness, FontConfig, ThemeSelect } from './controls'
 
+// TODO: https://docs.expo.dev/versions/latest/sdk/slider/
+// TODO: https://docs.expo.dev/versions/latest/sdk/brightness/
 export default function ThemeSheetContent() {
 	return (
 		<SafeAreaView style={{ flex: 1 }}>
@@ -10,6 +12,8 @@ export default function ThemeSheetContent() {
 				<Brightness />
 
 				<ThemeSelect />
+
+				<FontConfig />
 			</View>
 		</SafeAreaView>
 	)

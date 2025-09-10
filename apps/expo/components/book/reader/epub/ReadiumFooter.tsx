@@ -1,11 +1,12 @@
-import React, { useEffect, useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { Platform } from 'react-native'
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+
 import { Text } from '~/components/ui'
 import { useDisplay } from '~/lib/hooks'
 import { useReaderStore } from '~/stores'
-import { useEpubLocationStore } from '~/stores/epub'
+import { useEpubLocationStore, useEpubTheme } from '~/stores/epub'
 
 export const FOOTER_HEIGHT = 48
 
@@ -17,6 +18,8 @@ export default function ReadiumFooter() {
 		page: state.position,
 		totalPages: state.totalPages,
 	}))
+
+	const { colors } = useEpubTheme()
 
 	const insets = useSafeAreaInsets()
 
@@ -50,7 +53,9 @@ export default function ReadiumFooter() {
 			className="absolute z-20 h-12 flex-row items-center justify-center gap-2 px-2"
 			style={animatedStyles}
 		>
-			<Text className="font-medium text-foreground-muted">{formattedPosition}</Text>
+			<Text className="font-medium" style={{ color: colors?.foreground, opacity: 0.9 }}>
+				{formattedPosition}
+			</Text>
 		</Animated.View>
 	)
 }

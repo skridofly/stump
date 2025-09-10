@@ -1,7 +1,9 @@
+import { useMemo } from 'react'
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 
 import { COLORS } from '~/lib/constants'
+import { useColorScheme } from '~/lib/useColorScheme'
 import { BookMetadata, EPUBReaderThemeConfig, ReadiumLocator } from '~/modules/readium'
 
 import { ZustandMMKVStorage } from './store'
@@ -32,25 +34,34 @@ export const useEpubLocationStore = create<IEpubLocationStore>((set) => ({
 }))
 
 const defaultThemes: Record<string, EPUBReaderThemeConfig> = {
-	light: {
+	Light: {
 		colors: {
 			background: COLORS.light.background.DEFAULT,
 			foreground: COLORS.light.foreground.DEFAULT,
 		},
 	},
-	dark: {
+	Dark: {
 		colors: {
 			background: COLORS.dark.background.DEFAULT,
 			foreground: COLORS.dark.foreground.DEFAULT,
 		},
 	},
+	Sepia: {
+		colors: {
+			background: '#F5E9D3',
+			foreground: '#5B4636',
+		},
+	},
 }
+
+export type StoredConfig = Pick<EPUBReaderThemeConfig, 'colors'>
 
 export type IEpubThemesStore = {
 	selectedTheme?: string
-	themes: Record<string, EPUBReaderThemeConfig>
-	addTheme: (name: string, config: EPUBReaderThemeConfig) => void
+	themes: Record<string, StoredConfig>
+	addTheme: (name: string, config: StoredConfig) => void
 	deleteTheme: (name: string) => void
+	selectTheme: (name: string) => void
 	resetThemes: () => void
 }
 
@@ -73,6 +84,7 @@ export const useEpubThemesStore = create<IEpubThemesStore>()(
 						delete newThemes[name]
 						return { themes: newThemes }
 					}),
+				selectTheme: (name) => set({ selectedTheme: name }),
 				resetThemes: () => set({ themes: defaultThemes }),
 			}) satisfies IEpubThemesStore,
 		{
@@ -82,3 +94,37 @@ export const useEpubThemesStore = create<IEpubThemesStore>()(
 		},
 	),
 )
+
+export const resolveTheme = (
+	themes: Record<string, StoredConfig>,
+	themeName: string,
+	colorScheme: 'light' | 'dark',
+): StoredConfig => {
+	const theme = themes[themeName]
+	return theme ?? (colorScheme === 'dark' ? themes.Dark : themes.Light)
+}
+
+export const resolveThemeName = (
+	themes: Record<string, StoredConfig>,
+	themeName: string | undefined,
+	colorScheme: 'light' | 'dark',
+): string => {
+	if (themeName && themes[themeName]) {
+		return themeName
+	}
+
+	return colorScheme === 'dark' ? 'Dark' : 'Light'
+}
+
+export const useEpubTheme = () => {
+	const { colorScheme } = useColorScheme()
+	const { themes, selectedTheme } = useEpubThemesStore((store) => ({
+		themes: store.themes,
+		selectedTheme: store.selectedTheme,
+	}))
+
+	return useMemo(
+		() => resolveTheme(themes, selectedTheme || '', colorScheme),
+		[themes, selectedTheme, colorScheme],
+	)
+}

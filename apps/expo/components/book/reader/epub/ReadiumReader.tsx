@@ -3,11 +3,10 @@ import { View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { useActiveServer } from '~/components/activeServer'
-import { useColors } from '~/lib/constants'
 import { ReadiumLocator, ReadiumView } from '~/modules/readium'
 import { useReaderStore } from '~/stores'
 import { useDownload } from '~/stores/download'
-import { useEpubLocationStore } from '~/stores/epub'
+import { useEpubLocationStore, useEpubTheme } from '~/stores/epub'
 import { useBookPreferences } from '~/stores/reader'
 
 import { EbookReaderBookRef } from '../image/context'
@@ -48,10 +47,10 @@ export default function ReadiumReader({
 	const controlsVisible = useReaderStore((state) => state.showControls)
 	const setControlsVisible = useReaderStore((state) => state.setShowControls)
 
-	const colors = useColors()
 	const {
 		preferences: { fontSize, fontFamily, lineHeight },
 	} = useBookPreferences({ book })
+	const { colors } = useEpubTheme()
 
 	// TODO: Support actual themes here
 	// TODO: Whenever this changes Readium will likely re-calculate totalPages etc, which means
@@ -61,10 +60,7 @@ export default function ReadiumReader({
 			fontSize,
 			fontFamily,
 			lineHeight,
-			colors: {
-				background: colors.background.DEFAULT,
-				foreground: colors.foreground.DEFAULT,
-			},
+			colors,
 		}),
 		[fontSize, fontFamily, lineHeight, colors],
 	)
@@ -132,7 +128,7 @@ export default function ReadiumReader({
 	if (!localUri) return null
 
 	return (
-		<View style={{ flex: 1 }}>
+		<View style={{ flex: 1, backgroundColor: colors?.background }}>
 			<ReadiumHeader settingsUrl={`/server/${id}/books/${book.id}/ebook-settings`} />
 
 			<ReadiumView

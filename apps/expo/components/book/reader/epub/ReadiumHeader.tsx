@@ -11,7 +11,7 @@ import { Text } from '~/components/ui'
 import { Icon } from '~/components/ui/icon'
 import { useDisplay } from '~/lib/hooks'
 import { useReaderStore } from '~/stores'
-import { useEpubLocationStore } from '~/stores/epub'
+import { useEpubLocationStore, useEpubTheme } from '~/stores/epub'
 
 export const HEADER_HEIGHT = 48
 
@@ -24,6 +24,8 @@ export default function ReadiumHeader({ settingsUrl }: Props) {
 
 	const visible = useReaderStore((state) => state.showControls)
 	const chapterTitle = useEpubLocationStore((state) => state.currentChapter)
+
+	const { colors } = useEpubTheme()
 
 	const insets = useSafeAreaInsets()
 
@@ -50,9 +52,11 @@ export default function ReadiumHeader({ settingsUrl }: Props) {
 			className="absolute z-20 h-12 flex-row items-center justify-between gap-2 px-2"
 			style={animatedStyles}
 		>
-			<ChevronBackLink />
+			<ChevronBackLink style={{ color: colors?.foreground, opacity: 0.9 }} />
 
-			<Text numberOfLines={1}>{chapterTitle}</Text>
+			<Text numberOfLines={1} style={{ color: colors?.foreground }}>
+				{chapterTitle}
+			</Text>
 
 			{/* TODO: Menu items */}
 			<Pressable
@@ -64,8 +68,9 @@ export default function ReadiumHeader({ settingsUrl }: Props) {
 				{({ pressed }) => (
 					<Icon
 						as={ALargeSmall}
-						className="h-6 w-6 text-foreground-muted"
-						style={{ opacity: pressed ? 0.7 : 1 }}
+						className="h-6 w-6"
+						// @ts-expect-error: Color definitely works
+						style={{ opacity: pressed ? 0.7 : 0.9, color: colors?.foreground }}
 					/>
 				)}
 			</Pressable>

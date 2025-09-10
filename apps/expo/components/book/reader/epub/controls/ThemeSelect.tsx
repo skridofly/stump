@@ -1,12 +1,14 @@
 import { Cog } from 'lucide-react-native'
+import { useMemo } from 'react'
 import { View } from 'react-native'
-import { ScrollView } from 'react-native-gesture-handler'
+import { Pressable, ScrollView } from 'react-native-gesture-handler'
 
 import { Button, Text } from '~/components/ui'
 import { Icon } from '~/components/ui/icon'
 import { useColorScheme } from '~/lib/useColorScheme'
+import { cn } from '~/lib/utils'
 import { EPUBReaderThemeConfig } from '~/modules/readium'
-import { useEpubThemesStore } from '~/stores/epub'
+import { resolveThemeName, useEpubThemesStore } from '~/stores/epub'
 
 export default function ThemeSelect() {
 	const { colorScheme } = useColorScheme()
@@ -14,6 +16,11 @@ export default function ThemeSelect() {
 		themes: store.themes,
 		selectedTheme: store.selectedTheme,
 	}))
+
+	const activeTheme = useMemo(
+		() => resolveThemeName(themes, selectedTheme || '', colorScheme),
+		[themes, selectedTheme, colorScheme],
+	)
 
 	// TODO: Grid
 	return (
@@ -28,13 +35,12 @@ export default function ThemeSelect() {
 			>
 				{Object.entries(themes).map(([name, config]) => (
 					<View key={name} className="items-center">
-						<ThemePreview name={name} config={config} />
-						{selectedTheme === name && <View className="absolute inset-0 rounded-lg border-2" />}
+						<ThemePreview name={name} config={config} isActive={activeTheme === name} />
 					</View>
 				))}
 			</ScrollView>
 
-			<View className="flex-row justify-center px-4">
+			<View className="flex-row justify-center gap-4 px-4">
 				<Button size="sm" className="flex-row">
 					<Icon as={Cog} className="mr-2 h-4 w-4" />
 					<Text>Customize</Text>
@@ -47,26 +53,36 @@ export default function ThemeSelect() {
 type Props = {
 	name: string
 	config: EPUBReaderThemeConfig
+	isActive?: boolean
 }
 
 // TODO: Take in border?
-const ThemePreview = ({ name, config }: Props) => {
+const ThemePreview = ({ name, config, isActive }: Props) => {
+	const onSelect = useEpubThemesStore((store) => store.selectTheme)
+
 	return (
-		<View
-			className="h-32 w-40 items-center justify-center rounded-lg shadow"
-			style={{ backgroundColor: config.colors?.background }}
-		>
-			<Text
-				style={{
-					color: config.colors?.foreground,
-				}}
-				className="items-center justify-center text-2xl"
+		<Pressable onPress={() => onSelect(name)}>
+			<View
+				className={cn(
+					'h-32 w-40 items-center justify-center rounded-lg border-2 border-transparent shadow',
+					{
+						'border-edge-brand': isActive,
+					},
+				)}
+				style={{ backgroundColor: config.colors?.background }}
 			>
-				Aa
-			</Text>
-			<Text className="mt-1 text-center text-base" style={{ color: config.colors?.foreground }}>
-				{name}
-			</Text>
-		</View>
+				<Text
+					style={{
+						color: config.colors?.foreground,
+					}}
+					className="items-center justify-center text-2xl"
+				>
+					Aa
+				</Text>
+				<Text className="mt-1 text-center text-base" style={{ color: config.colors?.foreground }}>
+					{name}
+				</Text>
+			</View>
+		</Pressable>
 	)
 }
