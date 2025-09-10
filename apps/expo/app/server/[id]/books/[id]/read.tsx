@@ -13,7 +13,7 @@ import * as NavigationBar from 'expo-navigation-bar'
 import { useLocalSearchParams } from 'expo-router'
 import { useCallback, useEffect, useMemo } from 'react'
 
-import { EpubJSReader, ImageBasedReader, UnsupportedReader } from '~/components/book/reader'
+import { ReadiumReader, ImageBasedReader, UnsupportedReader } from '~/components/book/reader'
 import { NextInSeriesBookRef } from '~/components/book/reader/image/context'
 import { useAppState } from '~/lib/hooks'
 import { useReaderStore } from '~/stores'
@@ -205,10 +205,17 @@ export default function Screen() {
 	if (book.extension.match(EBOOK_EXTENSION)) {
 		const currentProgressCfi = book.readProgress?.epubcfi || undefined
 		// const initialCfi = restart ? undefined : currentProgressCfi
+		// return (
+		// 	<EpubJSReader
+		// 		book={book}
+		// 		initialCfi={currentProgressCfi} /*incognito={incognito}*/
+		// 		onEpubCfiChanged={onEpubCfiChanged}
+		// 	/>
+		// )
 		return (
-			<EpubJSReader
+			<ReadiumReader
 				book={book}
-				initialCfi={currentProgressCfi} /*incognito={incognito}*/
+				initialCfi={currentProgressCfi}
 				onEpubCfiChanged={onEpubCfiChanged}
 			/>
 		)
