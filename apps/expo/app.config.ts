@@ -116,6 +116,15 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 					organization: 'stumpapp',
 				},
 			],
+			[
+				'react-native-edge-to-edge',
+				{
+					android: {
+						parentTheme: 'Default',
+						enforceNavigationBarContrast: false,
+					},
+				},
+			],
 		],
 		owner: 'stumpapp',
 		experiments: {

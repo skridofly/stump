@@ -5,11 +5,16 @@
 	"author": "Aaron Leopold <aaronleopold1221@gmail.com>",
 	"license": "SEE README.md",
 	"private": true,
-	"workspaces": [
-		"apps/*",
-		"docs",
-		"packages/*"
-	],
+	"workspaces": {
+		"packages": [
+			"apps/*",
+			"docs",
+			"packages/*"
+		],
+		"nohoist": [
+			"apps/expo"
+		]
+	},
 	"scripts": {
 		"prepare": "husky",
 		"setup": "yarn && yarn web build && cargo codegen",
@@ -60,7 +65,9 @@
 		"vile-rubocop": "^0.2.4"
 	},
 	"resolutions": {
-		"@types/react": "=18.3.12"
+		"@types/react": "^19.0.0",
+		"react": "^19.0.0",
+		"react-dom": "^19.0.0"
 	},
 	"lint-staged": {
 		"*.{js,jsx,ts,tsx,md,json}": [

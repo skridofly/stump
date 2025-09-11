@@ -7,8 +7,9 @@ import duration from 'dayjs/plugin/duration'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { Stack } from 'expo-router'
 import * as SplashScreen from 'expo-splash-screen'
-import { StatusBar } from 'expo-status-bar'
 import LottieView from 'lottie-react-native'
+import { SystemBars } from 'react-native-edge-to-edge'
+
 import * as React from 'react'
 import { Platform, View } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
@@ -104,7 +105,9 @@ export default function RootLayout() {
 			<ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
 				<BottomSheet.Provider>
 					{/* TODO: This pushes content when entering/exiting */}
-					<StatusBar style={isDarkColorScheme ? 'light' : 'dark'} hidden={shouldHideStatusBar} />
+					{/* <StatusBar style={isDarkColorScheme ? 'light' : 'dark'} hidden={shouldHideStatusBar} /> */}
+					{/* Note: https://github.com/react-navigation/react-navigation/issues/12579 */}
+					<SystemBars style={isDarkColorScheme ? 'light' : 'dark'} hidden={shouldHideStatusBar} />
 					<Stack
 						// https://github.com/expo/expo/issues/15244 ?
 						// screenOptions={{

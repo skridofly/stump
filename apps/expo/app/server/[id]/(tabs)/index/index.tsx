@@ -24,11 +24,11 @@ export default function Screen() {
 
 	return (
 		<ScrollView
-			className="flex-1 bg-background p-4"
+			className="flex-1 bg-background"
 			refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-			contentInsetAdjustmentBehavior="automatic"
+			contentInsetAdjustmentBehavior="always"
 		>
-			<View className="flex flex-1 gap-8 pb-8">
+			<View className="flex flex-1 gap-8 pb-8 pt-4">
 				<ContinueReading />
 				<OnDeck />
 				<RecentlyAddedSeriesHorizontal />

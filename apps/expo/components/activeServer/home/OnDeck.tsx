@@ -60,13 +60,16 @@ function OnDeck() {
 
 	return (
 		<View className="flex gap-4">
-			<Heading size="xl">Your Next Read</Heading>
+			<Heading size="xl" className="px-4">
+				Your Next Read
+			</Heading>
 
 			<FlashList
 				data={nodes}
 				keyExtractor={({ id }) => id}
 				renderItem={renderItem}
 				horizontal
+				contentContainerStyle={{ paddingHorizontal: 16 }}
 				onEndReached={onEndReached}
 				onEndReachedThreshold={0.85}
 				showsHorizontalScrollIndicator={false}

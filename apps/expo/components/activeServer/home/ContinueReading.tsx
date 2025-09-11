@@ -72,17 +72,22 @@ function ContinueReading() {
 
 			{(leftOffBooks.length > 0 || activeBooks.length === 0) && (
 				<View className="flex gap-4">
-					<Heading size="xl">Continue Reading</Heading>
+					<Heading size="xl" className="px-4">
+						Continue Reading
+					</Heading>
 
 					<FlashList
 						data={leftOffBooks}
 						keyExtractor={({ id }) => id}
 						renderItem={renderItem}
 						horizontal
+						contentContainerStyle={{ paddingHorizontal: 16 }}
 						onEndReached={onEndReached}
 						onEndReachedThreshold={0.85}
 						showsHorizontalScrollIndicator={false}
-						ListEmptyComponent={<Text className="text-foreground-muted">No books in progress</Text>}
+						ListEmptyComponent={
+							<Text className="px-4 text-foreground-muted">No books in progress</Text>
+						}
 					/>
 				</View>
 			)}

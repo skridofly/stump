@@ -14,10 +14,10 @@ export default function Screen() {
 					headerTitle: '',
 					headerShown: Platform.OS === 'ios',
 					headerTransparent: true,
-					headerLargeTitleStyle: {
-						fontSize: 24,
-					},
-					headerLargeTitle: true,
+					// headerLargeTitleStyle: {
+					// 	fontSize: 24,
+					// },
+					// headerLargeTitle: true,
 					headerBlurEffect: 'regular',
 				}}
 			/>

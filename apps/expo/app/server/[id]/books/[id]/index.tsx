@@ -16,6 +16,7 @@ import { BookDescription, InfoRow, InfoSection, InfoStat } from '~/components/bo
 import { FasterImage } from '~/components/Image'
 import RefreshControl from '~/components/RefreshControl'
 import { Button, Heading, icons, Text } from '~/components/ui'
+import { useColors } from '~/lib/constants'
 import { formatBytes, parseGraphQLDecimal } from '~/lib/format'
 import { cn } from '~/lib/utils'
 
@@ -77,7 +78,9 @@ const query = graphql(`
 			resolvedName
 			series {
 				resolvedName
+				mediaCount
 			}
+			seriesPosition
 			size
 			thumbnail {
 				url
@@ -90,8 +93,10 @@ type ActiveReadingSession = NonNullable<
 	NonNullable<Pick<NonNullable<BookByIdQuery['mediaById']>, 'readProgress'>>['readProgress']
 >
 
-// TODO: Figure out what to do with this header shit. It looks OK on Apple
-// but couldn't get anything similar working on Android
+// TODO: I think we can rethink some of this information arch. I originally just kinda dumped
+// all of the metadata on the page but I think we can definitely curate some of it better to be
+// prettier. Like {seriesPosition} of {series.mediaCount} in {seriesName} instead of just dumping
+// the series-related metadata in a list.
 
 export default function Screen() {
 	const { id: bookID } = useLocalSearchParams<{ id: string }>()
@@ -127,7 +132,7 @@ export default function Screen() {
 				<ChevronLeft className="text-foreground" onPress={() => navigation.goBack()} />
 			),
 			headerRight: () => (book ? <BookActionMenu data={book} /> : null),
-			headerTitle: Platform.OS === 'ios' ? book?.resolvedName : '',
+			// headerTitle: Platform.OS === 'ios' ? book?.resolvedName : '',
 		})
 	}, [navigation, book, bookID])
 
@@ -148,6 +153,8 @@ export default function Screen() {
 	const seriesVolume = book.metadata?.volume
 
 	const noMetadata = !description && !seriesName && !genres && !characters
+
+	const colors = useColors()
 
 	const publisher = book.metadata?.publisher
 	const writers = book.metadata?.writers?.join(', ')
@@ -238,13 +245,9 @@ export default function Screen() {
 							<BookActionMenu data={book} />
 						</View>
 					)}
+
 					<View className="flex items-center gap-4">
-						{Platform.OS === 'android' && (
-							<Heading size="lg" className="leading-6">
-								{book.resolvedName}
-							</Heading>
-						)}
-						<View className="aspect-[2/3] self-center overflow-hidden rounded-lg">
+						<View className="aspect-[2/3] self-center">
 							<FasterImage
 								source={{
 									url: book.thumbnail.url,
@@ -252,10 +255,33 @@ export default function Screen() {
 										Authorization: sdk.authorizationHeader || '',
 									},
 									resizeMode: 'fill',
+									borderRadius: 8,
 								}}
-								style={{ height: 350, width: 'auto' }}
+								style={{
+									height: 350,
+									width: 'auto',
+									shadowColor: '#000',
+									shadowOffset: { width: 0, height: 1 },
+									shadowOpacity: 0.2,
+									shadowRadius: 5,
+									borderRadius: 8,
+									borderWidth: 0.2,
+									borderColor: colors.edge.DEFAULT,
+								}}
 							/>
 						</View>
+					</View>
+
+					<View className="gap-2">
+						<Heading size="lg" className="text-center leading-6">
+							{book.resolvedName}
+						</Heading>
+
+						{seriesName && book.seriesPosition != null && (
+							<Text className="text-center text-base text-foreground-muted">
+								{book.seriesPosition} of {book.series.mediaCount} in {seriesName}
+							</Text>
+						)}
 					</View>
 
 					<View className="flex w-full flex-row items-center gap-x-2 tablet:max-w-sm tablet:self-center">

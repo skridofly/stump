@@ -11,6 +11,7 @@ import { COLORS } from '~/lib/constants'
 import { useActiveServer } from '../activeServer'
 import { FasterImage } from '../Image'
 import { Text } from '../ui'
+import { useListItemSize } from '~/lib/hooks'
 
 const fragment = graphql(`
 	fragment OnDeckBookItem on Media {
@@ -40,6 +41,8 @@ function OnDeckBookItem({ book }: Props) {
 		activeServer: { id: serverID },
 	} = useActiveServer()
 
+	const { height, width } = useListItemSize()
+
 	const router = useRouter()
 
 	return (
@@ -52,8 +55,9 @@ function OnDeckBookItem({ book }: Props) {
 					}}
 				>
 					<LinearGradient
-						colors={['transparent', 'rgba(0, 0, 0, 0.85)']}
+						colors={['transparent', 'rgba(0, 0, 0, 0.9)']}
 						style={{ position: 'absolute', inset: 0, zIndex: 10, borderRadius: 8 }}
+						locations={[0.4, 1]}
 					/>
 
 					<FasterImage
@@ -66,7 +70,7 @@ function OnDeckBookItem({ book }: Props) {
 							// FIXME: I REALLY shouldn't have to do this
 							borderRadius: Platform.OS === 'android' ? 24 : 8,
 						}}
-						style={{ width: 200 * (2 / 3), height: 200 }}
+						style={{ width, height }}
 					/>
 
 					<View className="absolute bottom-0 z-20 w-full gap-1 p-2">
@@ -83,6 +87,7 @@ function OnDeckBookItem({ book }: Props) {
 						>
 							{data.resolvedName}
 						</Text>
+
 						{data.seriesPosition != null && (
 							<Text
 								className="flex-1 flex-wrap text-sm font-medium"
@@ -95,7 +100,7 @@ function OnDeckBookItem({ book }: Props) {
 								}}
 								numberOfLines={0}
 							>
-								{data.seriesPosition} of {data.series?.mediaCount ?? '?'}
+								Book {data.seriesPosition} of {data.series?.mediaCount ?? '?'}
 							</Text>
 						)}
 					</View>

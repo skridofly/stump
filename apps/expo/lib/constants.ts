@@ -1,4 +1,11 @@
+import { Platform } from 'react-native'
 import { useColorScheme } from './useColorScheme'
+
+export const ENABLE_LARGE_HEADER = Platform.select({
+	// iOS 26+ has a bug that causes freezes when using large headers
+	ios: typeof Platform.Version === 'number' ? Platform.Version < 26 : Platform.Version < '26',
+	default: true,
+})
 
 const light = {
 	background: {
@@ -63,6 +70,10 @@ const light = {
 			fill: '#ffffff',
 		},
 		subtle: '#26272a',
+	},
+	dots: {
+		active: '#414347',
+		inactive: '#d3d5d7',
 	},
 }
 
@@ -131,6 +142,10 @@ const dark: Theme = {
 			fill: '#ffffff',
 		},
 		subtle: '#e9eaeb',
+	},
+	dots: {
+		active: '#f5f3ef',
+		inactive: '#898d94',
 	},
 }
 
