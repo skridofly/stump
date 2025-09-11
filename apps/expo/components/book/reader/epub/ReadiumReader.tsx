@@ -3,7 +3,7 @@ import { View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { useActiveServer } from '~/components/activeServer'
-import { ReadiumLocator, ReadiumView } from '~/modules/readium'
+import { BookMetadata, ReadiumLocator, ReadiumView } from '~/modules/readium'
 import { useReaderStore } from '~/stores'
 import { useDownload } from '~/stores/download'
 import { useEpubLocationStore, useEpubTheme } from '~/stores/epub'
@@ -66,6 +66,8 @@ export default function ReadiumReader({
 	)
 
 	const store = useEpubLocationStore((store) => ({
+		storeBook: store.storeBook,
+		onTocChange: store.onTocChange,
 		onBookLoad: store.onBookLoad,
 		onLocationChange: store.onLocationChange,
 		cleanup: store.onUnload,
@@ -84,7 +86,7 @@ export default function ReadiumReader({
 		}
 
 		download()
-	}, [localUri, book, downloadBook])
+	}, [localUri, book, downloadBook, store])
 
 	useEffect(
 		() => {
@@ -94,6 +96,15 @@ export default function ReadiumReader({
 		},
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 		[],
+	)
+
+	const handleBookLoaded = useCallback(
+		(metadata?: BookMetadata) => {
+			store.onBookLoad(metadata)
+			store.onTocChange(book.ebook?.toc ?? [])
+			store.storeBook(book)
+		},
+		[store, book],
 	)
 
 	const handleLocationChanged = useCallback(
@@ -129,14 +140,16 @@ export default function ReadiumReader({
 
 	return (
 		<View style={{ flex: 1, backgroundColor: colors?.background }}>
-			<ReadiumHeader settingsUrl={`/server/${id}/books/${book.id}/ebook-settings`} />
+			<ReadiumHeader
+				settingsUrl={`/server/${id}/books/${book.id}/ebook-settings`}
+				locationsUrl={`/server/${id}/books/${book.id}/ebook-locations-modal`}
+			/>
 
 			<ReadiumView
 				bookId={book.id}
 				url={localUri}
 				initialLocator={initialLocator}
-				// TODO: This doesn't actually work lol
-				onBookLoaded={({ nativeEvent }) => store.onBookLoad(nativeEvent.bookMetadata)}
+				onBookLoaded={({ nativeEvent }) => handleBookLoaded(nativeEvent.bookMetadata)}
 				onLocatorChange={({ nativeEvent: locator }) => handleLocationChanged(locator)}
 				onMiddleTouch={handleMiddleTouch}
 				onSelection={handleSelection}

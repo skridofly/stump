@@ -26,11 +26,15 @@ export default function Screen() {
 					headerShown: true,
 					headerTransparent: true,
 					headerTitleStyle: { fontSize: 20 },
-					// headerLargeTitleStyle: {
-					// 	fontSize: 24,
-					// },
-					// headerLargeTitle: true,
 					headerBlurEffect: 'none',
+				}}
+			/>
+
+			<Stack.Screen
+				name="ebook-locations-modal"
+				options={{
+					presentation: 'modal',
+					headerShown: false,
 				}}
 			/>
 		</Stack>

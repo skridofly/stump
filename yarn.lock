@@ -22870,6 +22870,11 @@ react-native-mmkv@^3.2.0:
   resolved "https://registry.npmjs.org/react-native-mmkv/-/react-native-mmkv-3.2.0.tgz"
   integrity sha512-9y7K//1MaU46TFrXkyU0wT5VGk9Y2FDLFV6NPl+z3jTbm2G7SC1UIxneF6CfhSmBX5CfKze9SO7kwDuRx7flpQ==
 
+react-native-pager-view@^6.9.1:
+  version "6.9.1"
+  resolved "https://registry.yarnpkg.com/react-native-pager-view/-/react-native-pager-view-6.9.1.tgz#a9e6d9323935cc2ae1d46d7816b66f76dc3eff8e"
+  integrity sha512-uUT0MMMbNtoSbxe9pRvdJJKEi9snjuJ3fXlZhG8F2vVMOBJVt/AFtqMPUHu9yMflmqOr08PewKzj9EPl/Yj+Gw==
+
 react-native-quick-base64@^2.0.5:
   version "2.1.2"
   resolved "https://registry.npmjs.org/react-native-quick-base64/-/react-native-quick-base64-2.1.2.tgz"

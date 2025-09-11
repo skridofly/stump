@@ -1,10 +1,16 @@
 import { requireNativeView } from 'expo'
 import * as React from 'react'
 
-import { ReadiumViewProps } from './Readium.types'
+import { ReadiumViewProps, ReadiumViewRef } from './Readium.types'
 
-const NativeView: React.ComponentType<ReadiumViewProps> = requireNativeView('Readium')
+const NativeView: React.ComponentType<
+	React.PropsWithoutRef<ReadiumViewProps> & React.RefAttributes<ReadiumViewRef>
+> = requireNativeView('Readium')
 
-export default function ReadiumView(props: ReadiumViewProps) {
-	return <NativeView {...props} />
-}
+const ReadiumView = React.forwardRef<ReadiumViewRef, ReadiumViewProps>((props, ref) => {
+	return <NativeView ref={ref} {...props} />
+})
+
+ReadiumView.displayName = 'ReadiumView'
+
+export default ReadiumView

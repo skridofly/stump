@@ -2,27 +2,71 @@ import { useMemo } from 'react'
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 
+import { EbookReaderBookRef } from '~/components/book/reader/image/context'
 import { COLORS } from '~/lib/constants'
 import { useColorScheme } from '~/lib/useColorScheme'
 import { BookMetadata, EPUBReaderThemeConfig, ReadiumLocator } from '~/modules/readium'
 
 import { ZustandMMKVStorage } from './store'
 
+interface TableOfContentsItem {
+	label: string
+	content: string
+	children: TableOfContentsItem[]
+	play_order: number
+}
+
+export const parseToc = (toc?: string[]): TableOfContentsItem[] => {
+	if (!toc) return []
+
+	const parsedToc = toc
+		.map((item) => {
+			try {
+				return JSON.parse(item) as TableOfContentsItem
+			} catch (e) {
+				console.error('Failed to parse toc item', item, e)
+				return null
+			}
+		})
+		.filter((item) => item !== null) as TableOfContentsItem[]
+
+	return parsedToc
+}
+
 export type IEpubLocationStore = {
+	book?: EbookReaderBookRef
+	storeBook: (book: EbookReaderBookRef) => void
+
 	currentChapter: string
 	position: number
 	totalPages: number
+	toc: TableOfContentsItem[]
 
+	onTocChange: (toc: TableOfContentsItem[] | string[]) => void
 	onBookLoad: (metadata?: BookMetadata) => void
 	onLocationChange: (locator: ReadiumLocator) => void
 	onUnload: () => void
 }
 
 export const useEpubLocationStore = create<IEpubLocationStore>((set) => ({
+	storeBook: (book) => set({ book }),
+
 	currentChapter: '',
 	position: 0,
 	totalPages: 0,
+	toc: [],
 
+	onTocChange: (toc) => {
+		if (typeof toc[0] === 'string') {
+			set({
+				toc: parseToc(toc as string[]),
+			})
+		} else {
+			set({
+				toc: toc as TableOfContentsItem[],
+			})
+		}
+	},
 	onBookLoad: (metadata) =>
 		set({
 			totalPages: metadata?.totalPages ?? 0,
@@ -30,7 +74,7 @@ export const useEpubLocationStore = create<IEpubLocationStore>((set) => ({
 	onLocationChange: (locator) =>
 		set({ currentChapter: locator.chapterTitle, position: locator.locations?.position ?? 0 }),
 
-	onUnload: () => set({ currentChapter: '', position: 0, totalPages: 0 }),
+	onUnload: () => set({ currentChapter: '', position: 0, totalPages: 0, toc: [], book: undefined }),
 }))
 
 const defaultThemes: Record<string, EPUBReaderThemeConfig> = {

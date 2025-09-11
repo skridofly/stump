@@ -27,6 +27,9 @@ export const query = graphql(`
 			name: resolvedName
 			pages
 			extension
+			thumbnail {
+				url
+			}
 			readProgress {
 				percentageCompleted
 				epubcfi
@@ -39,6 +42,7 @@ export const query = graphql(`
 				defaultReadingDir
 			}
 			metadata {
+				summary
 				pageAnalysis {
 					dimensions {
 						height
@@ -54,6 +58,21 @@ export const query = graphql(`
 						url
 					}
 				}
+			}
+			ebook {
+				bookmarks {
+					id
+					userId
+					epubcfi
+					mediaId
+				}
+				spine {
+					id
+					idref
+					properties
+					linear
+				}
+				toc
 			}
 		}
 	}

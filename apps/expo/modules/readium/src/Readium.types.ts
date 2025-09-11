@@ -120,7 +120,6 @@ export type ReadiumViewProps = {
 	locator?: ReadiumLocator
 	initialLocator?: ReadiumLocator
 	onLoad?: (event: { nativeEvent: OnLoadEventPayload }) => void
-	onPageChange?: (event: { nativeEvent: OnPageChangeEventPayload }) => void
 	onBookLoaded?: (event: {
 		nativeEvent: { success: boolean; error?: string; bookMetadata?: BookMetadata }
 	}) => void
@@ -129,6 +128,7 @@ export type ReadiumViewProps = {
 	onSelection?: (event: {
 		nativeEvent: { cleared?: boolean; x?: number; y?: number; locator?: ReadiumLocator }
 	}) => void
+	// onHighlightTap
 	onDoubleTouch?: (event: { nativeEvent: ReadiumLocator }) => void
 	onError?: (event: {
 		nativeEvent: { errorDescription: string; failureReason: string; recoverySuggestion: string }
@@ -154,4 +154,10 @@ export interface EPUBHighlight extends EPUBLocation {
 	id: string
 	color: string
 	text: string
+}
+
+export type ReadiumViewRef = {
+	goToLocation: (locator: ReadiumLocator) => Promise<void>
+	goForward: () => Promise<void>
+	goBackward: () => Promise<void>
 }
