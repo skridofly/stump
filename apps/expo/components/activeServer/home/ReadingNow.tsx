@@ -3,10 +3,12 @@ import { FragmentType, graphql, useFragment } from '@stump/graphql'
 import dayjs from 'dayjs'
 import { useRouter } from 'expo-router'
 import { useCallback, useRef } from 'react'
-import { Pressable, View } from 'react-native'
-import Carousel, { ICarouselInstance, Pagination } from 'react-native-reanimated-carousel'
-import { useSharedValue } from 'react-native-reanimated'
+import { Easing, Pressable, View } from 'react-native'
+import { easeGradient } from 'react-native-easing-gradient'
+import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import LinearGradient from 'react-native-linear-gradient'
+import { runOnJS, useSharedValue } from 'react-native-reanimated'
+import Carousel, { ICarouselInstance, Pagination } from 'react-native-reanimated-carousel'
 
 import { BookMetaLink } from '~/components/book'
 import { FasterImage } from '~/components/Image'
@@ -45,12 +47,16 @@ type Props = {
 	books: (IReadingNowFragment & { id: string })[]
 }
 
+const IMAGE_HEIGHT = 425
+const IMAGE_WIDTH = IMAGE_HEIGHT * (2 / 3)
+
 export default function ReadingNow({ books }: Props) {
 	const { width } = useDisplay()
 
 	const colors = useColors()
 	const carouselRef = useRef<ICarouselInstance>(null)
 	const progressValue = useSharedValue<number>(0)
+	const activeDotIndex = useSharedValue(-1) // -1 means inactive
 
 	const onPressPagination = (index: number) => {
 		carouselRef.current?.scrollTo({
@@ -59,26 +65,54 @@ export default function ReadingNow({ books }: Props) {
 		})
 	}
 
+	const paginationDotsContainerWidth =
+		books.length * 8 + // total width of all dots
+		(books.length - 1) * 6 + // total gap between dots
+		16 * 2 // container padding
+
+	const pan = Gesture.Pan()
+		.activeOffsetX([-3, 3])
+		.failOffsetY([-6, 6])
+		.onUpdate((event) => {
+			const totalItems = books.length
+			const activeAreaWidth = paginationDotsContainerWidth / totalItems
+			const index = Math.min(totalItems - 1, Math.max(0, Math.floor(event.x / activeAreaWidth)))
+
+			// only update onPressPagination when the index actually changes (not when same number due to tiny movements)
+			if (activeDotIndex.value !== index) {
+				activeDotIndex.value = index
+				runOnJS(onPressPagination)(index)
+			}
+		})
+		.onEnd(() => {
+			activeDotIndex.value = -1
+		})
+
 	return (
-		<View className="flex items-start gap-4">
+		<View className="mb-[-16px] flex items-start gap-4">
 			{/* <Heading size="xl">Jump Back In</Heading> */}
+
+			{/* This view prevents the left 20px of the carousel from overriding swipe back navigation */}
+			<View className="absolute left-0 top-0 z-30 w-[20px]" style={{ height: IMAGE_HEIGHT }} />
 
 			<View className="w-full">
 				<Carousel
 					ref={carouselRef}
 					width={width}
-					height={400}
+					height={IMAGE_HEIGHT}
 					data={books}
 					loop={false}
 					mode="parallax"
 					modeConfig={{
-						parallaxScrollingScale: 0.98,
+						parallaxScrollingOffset: 95,
+						parallaxScrollingScale: 0.99,
+						parallaxAdjacentItemScale: 0.94,
 					}}
 					onProgressChange={progressValue}
 					// Note: I added this to fix vertical scroll conflicts
 					onConfigurePanGesture={(pan) => {
-						pan.activeOffsetX([-10, 10])
-						pan.failOffsetY([-5, 5])
+						pan.activeOffsetX([-6, 6])
+						pan.failOffsetY([-12, 12])
 						return pan
 					}}
 					snapEnabled={true}
@@ -95,24 +129,28 @@ export default function ReadingNow({ books }: Props) {
 					)}
 				/>
 
-				<Pagination.Basic
-					progress={progressValue}
-					data={books}
-					dotStyle={{
-						width: 8,
-						height: 8,
-						borderRadius: 4,
-						backgroundColor: colors.dots.inactive,
-					}}
-					activeDotStyle={{
-						backgroundColor: colors.dots.active,
-					}}
-					containerStyle={{
-						marginTop: 16,
-						gap: 6,
-					}}
-					onPress={onPressPagination}
-				/>
+				<GestureDetector gesture={pan}>
+					<View className="mx-auto flex-row">
+						<Pagination.Custom
+							progress={progressValue}
+							data={books}
+							dotStyle={{
+								width: 8,
+								height: 8,
+								borderRadius: 4,
+								backgroundColor: colors.dots.inactive,
+							}}
+							activeDotStyle={{
+								backgroundColor: colors.dots.active,
+							}}
+							containerStyle={{
+								padding: 16,
+								gap: 6,
+							}}
+							onPress={onPressPagination}
+						/>
+					</View>
+				</GestureDetector>
 			</View>
 		</View>
 	)
@@ -139,7 +177,7 @@ function ReadingNowItem({ book }: ReadingNowItemProps) {
 		const contentWidth =
 			width -
 			16 * 2 - // page padding
-			400 * (2 / 3) - // image width
+			IMAGE_WIDTH - // image width
 			16 - // gap between image and text
 			60 // gap between other carousel items
 
@@ -199,6 +237,14 @@ function ReadingNowItem({ book }: ReadingNowItemProps) {
 
 	const router = useRouter()
 	const isEbookProgress = !!data.readProgress?.epubcfi
+	const { colors: gradientColors, locations: gradientLocations } = easeGradient({
+		colorStops: {
+			0.5: { color: 'transparent' },
+			1: { color: 'rgba(0, 0, 0, 0.90)' },
+		},
+		extraColorStopsPerTransition: 16,
+		easing: Easing.bezier(0.42, 0, 1, 1), // https://cubic-bezier.com/#.42,0,1,1
+	})
 
 	return (
 		<View className="flex flex-row gap-4">
@@ -213,9 +259,9 @@ function ReadingNowItem({ book }: ReadingNowItemProps) {
 				}}
 			>
 				<LinearGradient
-					colors={['transparent', 'rgba(0, 0, 0, 0.90)']}
+					colors={gradientColors}
 					style={{ position: 'absolute', inset: 0, zIndex: 10, borderRadius: 8 }}
-					locations={[0.5, 1]}
+					locations={gradientLocations}
 				/>
 
 				<FasterImage
@@ -228,8 +274,8 @@ function ReadingNowItem({ book }: ReadingNowItemProps) {
 						borderRadius: 8,
 					}}
 					style={{
-						height: 400,
-						width: 400 * (2 / 3),
+						height: IMAGE_HEIGHT,
+						width: IMAGE_WIDTH,
 					}}
 				/>
 
