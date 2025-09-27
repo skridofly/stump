@@ -73,8 +73,8 @@ class EPUBFragment(
                     "fonts/OpenDyslexic-Bold.otf",
                     "fonts/OpenDyslexic-Italic.otf",
                     "fonts/OpenDyslexic-Bold-Italic.otf",
-                    "fonts/Literata[opsz,wght].ttf",
-                    "fonts/Literata-Italic[opsz,wght].ttf",
+                    "fonts/Literata-VariableFont_opsz,wght.ttf",
+                    "fonts/Literata-Italic-VariableFont_opsz,wght.ttf",
                     "fonts/Atkinson-Hyperlegible-Regular.ttf",
                     "fonts/Atkinson-Hyperlegible-Bold.ttf",
                     "fonts/Atkinson-Hyperlegible-Italic.ttf",
@@ -113,37 +113,37 @@ class EPUBFragment(
                     }
                 }
 
-                // Literata via Literata-Italic[opsz,wght].ttf and Literata[opsz,wght].ttf
+                // Literata
                 addFontFamilyDeclaration(FontFamily("Literata")) {
                     // Regular weights
                     addFontFace {
-                        addSource("fonts/Literata[opsz,wght].ttf")
+                        addSource("fonts/Literata-VariableFont_opsz,wght.ttf")
                         setFontStyle(FontStyle.NORMAL)
                         setFontWeight(FontWeight.NORMAL)
                     }
                     addFontFace {
-                        addSource("fonts/Literata[opsz,wght].ttf")
+                        addSource("fonts/Literata-VariableFont_opsz,wght.ttf")
                         setFontStyle(FontStyle.NORMAL)
                         setFontWeight(FontWeight.BOLD)
                     }
                     addFontFace {
-                        addSource("fonts/Literata[opsz,wght].ttf")
+                        addSource("fonts/Literata-VariableFont_opsz,wght.ttf")
                         setFontStyle(FontStyle.NORMAL)
                         setFontWeight(FontWeight.LIGHT)
                     }
                     // Italic weights
                     addFontFace {
-                        addSource("fonts/Literata-Italic[opsz,wght].ttf")
+                        addSource("fonts/Literata-Italic-VariableFont_opsz,wght.ttf")
                         setFontStyle(FontStyle.ITALIC)
                         setFontWeight(FontWeight.NORMAL)
                     }
                     addFontFace {
-                        addSource("fonts/Literata-Italic[opsz,wght].ttf")
+                        addSource("fonts/Literata-Italic-VariableFont_opsz,wght.ttf")
                         setFontStyle(FontStyle.ITALIC)
                         setFontWeight(FontWeight.BOLD)
                     }
                     addFontFace {
-                        addSource("fonts/Literata-Italic[opsz,wght].ttf")
+                        addSource("fonts/Literata-Italic-VariableFont_opsz,wght.ttf")
                         setFontStyle(FontStyle.ITALIC)
                         setFontWeight(FontWeight.LIGHT)
                     }

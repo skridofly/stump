@@ -69,8 +69,6 @@ class NullPDFDocumentFactory: PDFDocumentFactory {
      ///   - bookID: The identifier for the book
      ///   - url: The URL of the local publication (EPUB file or extracted directory)
      public func openPublication(for bookID: String, at url: URL) async throws -> Publication {
-         print("Opening publication for bookID: \(bookID) at: \(url)")
-
          guard let fileURL = FileURL(url: url) else {
              print("Failed to create FileURL from: \(url)")
              throw BookServiceError.openFailed(URLError(.badURL))
@@ -87,8 +85,6 @@ class NullPDFDocumentFactory: PDFDocumentFactory {
              throw BookServiceError.assetRetrievalFailed(error)
          }
 
-         print("Opening publication with media type: \(asset.format.mediaType)")
-
          let publicationResult = await publicationOpener.open(
              asset: asset,
              allowUserInteraction: false,
@@ -98,7 +94,6 @@ class NullPDFDocumentFactory: PDFDocumentFactory {
          let publication: Publication
          switch publicationResult {
          case .success(let pub):
-             print("Successfully opened publication: \(pub.metadata.title)")
              publication = pub
          case .failure(let error):
              print("Failed to open publication: \(error)")
@@ -116,14 +111,12 @@ class NullPDFDocumentFactory: PDFDocumentFactory {
      ///   - archiveUrl: The URL of the local archive file
      ///   - extractedUrl: The URL where the archive should be extracted
      public func extractArchive(archiveUrl: URL, extractedUrl: URL) async throws {
-         print("Extracting archive from: \(archiveUrl) to: \(extractedUrl)")
          let fileManager = FileManager.default
 
          do {
              try fileManager.createDirectory(at: extractedUrl, withIntermediateDirectories: true, attributes: nil)
              
              try await fileManager.unzipItem(at: archiveUrl, to: extractedUrl)
-             print("Successfully extracted archive")
          } catch {
              print("Extract failed: \(error.localizedDescription)")
              throw BookServiceError.extractFailed(archiveUrl, error.localizedDescription)

@@ -137,133 +137,99 @@
      public func initializeNavigator(with publication: Publication) {
          guard let props = props else { return }
 
-         let resources = Bundle.main.resourceURL!
+         guard let resources = FileURL(url: Bundle.main.resourceURL!) else { return }
 
          let fontFamilyDeclarations: [AnyHTMLFontFamilyDeclaration] = [
              CSSFontFamilyDeclaration(
                  fontFamily: FontFamily(rawValue: "OpenDyslexic"),
                  fontFaces: [
                      CSSFontFace(
-                         file: FileURL(url: resources.appendingPathComponent("OpenDyslexic-Regular.otf"))!,
+                         file: resources.appendingPath("OpenDyslexic-Regular.otf", isDirectory: false),
                          style: .normal, weight: .standard(.normal)
                      ),
                      CSSFontFace(
-                         file: FileURL(url: resources.appendingPathComponent("OpenDyslexic-Bold.otf"))!,
+                         file: resources.appendingPath("OpenDyslexic-Bold.otf", isDirectory: false),
                          style: .normal, weight: .standard(.bold)
                      ),
                      CSSFontFace(
-                         file: FileURL(url: resources.appendingPathComponent("OpenDyslexic-Italic.otf"))!,
+                         file: resources.appendingPath("OpenDyslexic-Italic.otf", isDirectory: false),
                          style: .italic, weight: .standard(.normal)
                      ),
                      CSSFontFace(
-                         file: FileURL(url: resources.appendingPathComponent("OpenDyslexic-Bold-Italic.otf"))!,
+                         file: resources.appendingPath("OpenDyslexic-Bold-Italic.otf", isDirectory: false),
                          style: .italic, weight: .standard(.bold)
                      ),
                  ]
              ).eraseToAnyHTMLFontFamilyDeclaration(),
-             // Literata via Literata-Italic[opsz,wght].ttf and Literata[opsz,wght].ttf
+             // Literata
              CSSFontFamilyDeclaration(
                  fontFamily: FontFamily(rawValue: "Literata"),
                  fontFaces: [
-                     // Regular weights
                      CSSFontFace(
-                         file: FileURL(url: resources.appendingPathComponent("Literata[opsz,wght].ttf"))!,
-                         style: .normal, weight: .standard(.normal)
+                         file: resources.appendingPath("Literata-VariableFont_opsz,wght.ttf", isDirectory: false),
+                         style: .normal, weight: .variable(200...900)
                      ),
                      CSSFontFace(
-                         file: FileURL(url: resources.appendingPathComponent("Literata[opsz,wght].ttf"))!,
-                         style: .normal, weight: .standard(.bold)
-                     ),
-                     CSSFontFace(
-                         file: FileURL(url: resources.appendingPathComponent("Literata[opsz,wght].ttf"))!,
-                         style: .normal, weight: .standard(.light)
-                     ),
-                     // Italic weights
-                     CSSFontFace(
-                         file: FileURL(url: resources.appendingPathComponent("Literata-Italic[opsz,wght].ttf"))!,
-                         style: .italic, weight: .standard(.normal)
-                     ),
-                     CSSFontFace(
-                         file: FileURL(url: resources.appendingPathComponent("Literata-Italic[opsz,wght].ttf"))!,
-                         style: .italic, weight: .standard(.bold)
-                     ),
-                     CSSFontFace(
-                         file: FileURL(url: resources.appendingPathComponent("Literata-Italic[opsz,wght].ttf"))!,
-                         style: .italic, weight: .standard(.light)
+                         file: resources.appendingPath("Literata-Italic-VariableFont_opsz,wght.ttf", isDirectory: false),
+                         style: .italic, weight: .variable(200...900)
                      ),
                  ]
              ).eraseToAnyHTMLFontFamilyDeclaration(),
-             // Atkinson-Hyperlegible-{Bold,Regular,Italic,BoldItalic}.ttf
+             // Atkinson-Hyperlegible
              CSSFontFamilyDeclaration(
                  fontFamily: FontFamily(rawValue: "Atkinson-Hyperlegible"),
                  fontFaces: [
                      CSSFontFace(
-                         file: FileURL(url: resources.appendingPathComponent("Atkinson-Hyperlegible-Regular.ttf"))!,
+                         file: resources.appendingPath("Atkinson-Hyperlegible-Regular.ttf", isDirectory: false),
                          style: .normal, weight: .standard(.normal)
                      ),
                      CSSFontFace(
-                         file: FileURL(url: resources.appendingPathComponent("Atkinson-Hyperlegible-Bold.ttf"))!,
+                         file: resources.appendingPath("Atkinson-Hyperlegible-Bold.ttf", isDirectory: false),
                          style: .normal, weight: .standard(.bold)
                      ),
                      CSSFontFace(
-                         file: FileURL(url: resources.appendingPathComponent("Atkinson-Hyperlegible-Italic.ttf"))!,
+                         file: resources.appendingPath("Atkinson-Hyperlegible-Italic.ttf", isDirectory: false),
                          style: .italic, weight: .standard(.normal)
                      ),
                      CSSFontFace(
-                         file: FileURL(url: resources.appendingPathComponent("Atkinson-Hyperlegible-BoldItalic.ttf"))!,
+                         file: resources.appendingPath("Atkinson-Hyperlegible-BoldItalic.ttf", isDirectory: false),
                          style: .italic, weight: .standard(.bold)
                      ),
                  ]
              ).eraseToAnyHTMLFontFamilyDeclaration(),
-             // CharisSIL-{Bold,Italic,BoldItalic,Regular}.ttf
+             // CharisSIL
              CSSFontFamilyDeclaration(
                  fontFamily: FontFamily(rawValue: "CharisSIL"),
                  fontFaces: [
                      CSSFontFace(
-                         file: FileURL(url: resources.appendingPathComponent("CharisSIL-Regular.ttf"))!,
+                         file: resources.appendingPath("CharisSIL-Regular.ttf", isDirectory: false),
                          style: .normal, weight: .standard(.normal)
                      ),
                      CSSFontFace(
-                         file: FileURL(url: resources.appendingPathComponent("CharisSIL-Bold.ttf"))!,
+                         file: resources.appendingPath("CharisSIL-Bold.ttf", isDirectory: false),
                          style: .normal, weight: .standard(.bold)
                      ),
                      CSSFontFace(
-                         file: FileURL(url: resources.appendingPathComponent("CharisSIL-Italic.ttf"))!,
+                         file: resources.appendingPath("CharisSIL-Italic.ttf", isDirectory: false),
                          style: .italic, weight: .standard(.normal)
                      ),
                      CSSFontFace(
-                         file: FileURL(url: resources.appendingPathComponent("CharisSIL-BoldItalic.ttf"))!,
+                         file: resources.appendingPath("CharisSIL-BoldItalic.ttf", isDirectory: false),
                          style: .italic, weight: .standard(.bold)
                      ),
                  ]
              ).eraseToAnyHTMLFontFamilyDeclaration(),
-             // Bitter-Italic-VariableFont_wght and Bitter-VariableFont_wght
+             // Bitter
              CSSFontFamilyDeclaration(
                  fontFamily: FontFamily(rawValue: "Bitter"),
                  fontFaces: [
                      CSSFontFace(
-                         file: FileURL(url: resources.appendingPathComponent("Bitter-VariableFont_wght.ttf"))!,
-                         style: .normal, weight: .standard(.normal)
+                         file: resources.appendingPath("Bitter-VariableFont_wght.ttf", isDirectory: false),
+                         style: .normal, weight: .variable(100...900)
                      ),
                      CSSFontFace(
-                         file: FileURL(url: resources.appendingPathComponent("Bitter-VariableFont_wght.ttf"))!,
-                         style: .normal, weight: .standard(.bold)
-                     ),
-                     CSSFontFace(
-                         file: FileURL(url: resources.appendingPathComponent("Bitter-VariableFont_wght.ttf"))!,
-                         style: .normal, weight: .standard(.light)
-                     ),
-                     CSSFontFace(
-                         file: FileURL(url: resources.appendingPathComponent("Bitter-Italic-VariableFont_wght.ttf"))!,
-                         style: .italic, weight: .standard(.normal)
-                     ),
-                     CSSFontFace(
-                         file: FileURL(url: resources.appendingPathComponent("Bitter-Italic-VariableFont_wght.ttf"))!,
-                         style: .italic, weight: .standard(.bold)
-                     ),
-                     CSSFontFace(
-                         file: FileURL(url: resources.appendingPathComponent("Bitter-Italic-VariableFont_wght.ttf"))!,
-                         style: .italic, weight: .standard(.light)
+                         file: resources.appendingPath("Bitter-Italic-VariableFont_wght.ttf", isDirectory: false),
+                         style: .italic, weight: .variable(100...900)
                      ),
                  ]
              ).eraseToAnyHTMLFontFamilyDeclaration(),
@@ -419,12 +385,6 @@
      func updatePreferences() {
          guard let props = props else { return }
 
-         print("DEBUG: Applying preferences:")
-         print("  backgroundColor: \(props.background)")
-         print("  textColor: \(props.foreground)")
-         print("  fontSize: \(props.fontSize)")
-         print("  fontFamily: \(props.fontFamily)")
-
          let preferences = EPUBPreferences(
              backgroundColor: props.background,
              fontFamily: props.fontFamily,
@@ -437,8 +397,6 @@
          )
          
          navigator?.submitPreferences(preferences)
-         
-         print("DEBUG: Preferences submitted to navigator")
 
          // Emit layout change event after preferences are updated
          DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
