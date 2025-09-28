@@ -279,6 +279,7 @@ export default function Screen() {
 								source={{
 									uri: book.thumbnail.url,
 									headers: {
+										...sdk.customHeaders,
 										Authorization: sdk.authorizationHeader || '',
 									},
 								}}

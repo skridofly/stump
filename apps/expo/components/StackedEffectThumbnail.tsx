@@ -41,6 +41,7 @@ export default function StackedEffectThumbnail({ label, uri, href }: Props) {
 			cache: true,
 			key: uri,
 			headers: {
+				...sdk.customHeaders,
 				Authorization: sdk.authorizationHeader || '',
 			},
 		})
@@ -64,6 +65,7 @@ export default function StackedEffectThumbnail({ label, uri, href }: Props) {
 								source={{
 									uri: uri,
 									headers: {
+										...sdk.customHeaders,
 										Authorization: sdk.authorizationHeader || '',
 									},
 								}}

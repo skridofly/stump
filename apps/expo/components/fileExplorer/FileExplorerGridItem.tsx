@@ -9,9 +9,9 @@ import { Pressable } from 'react-native-gesture-handler'
 import { useColorScheme } from '~/lib/useColorScheme'
 
 import { useActiveServer } from '../activeServer'
+import { BorderAndShadow } from '../BorderAndShadow'
 import { TurboImage } from '../Image'
 import { Text } from '../ui'
-import { BorderAndShadow } from '../BorderAndShadow'
 
 type ListedFile = DirectoryListingQuery['listDirectory']['nodes'][number]['files'][number]
 
@@ -65,6 +65,7 @@ export default function FileExplorerGridItem({ file }: Props) {
 								source={{
 									uri: file.media.thumbnail.url,
 									headers: {
+										...sdk.customHeaders,
 										Authorization: sdk.authorizationHeader || '',
 									},
 								}}

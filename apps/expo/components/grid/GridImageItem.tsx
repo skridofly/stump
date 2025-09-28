@@ -5,10 +5,10 @@ import { Pressable } from 'react-native-gesture-handler'
 
 import { cn } from '~/lib/utils'
 
+import { BorderAndShadow } from '../BorderAndShadow'
 import { TurboImage } from '../Image'
 import { Text } from '../ui'
 import { useGridItemSize } from './useGridItemSize'
-import { BorderAndShadow } from '../BorderAndShadow'
 
 type Props = {
 	uri: string
@@ -33,6 +33,7 @@ export default function GridImageItem({ uri, title, href }: Props) {
 							source={{
 								uri: uri,
 								headers: {
+									...sdk.customHeaders,
 									Authorization: sdk.authorizationHeader || '',
 								},
 							}}

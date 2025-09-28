@@ -125,6 +125,7 @@ export default function NextUpOverlay({ isVisible, book, onClose }: Props) {
 					source={{
 						uri: book.thumbnailUrl,
 						headers: {
+							...sdk.customHeaders,
 							Authorization: sdk.authorizationHeader || '',
 						},
 					}}

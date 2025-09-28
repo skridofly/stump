@@ -63,6 +63,7 @@ export default function BookSearchItem({ book }: Props) {
 						source={{
 							uri: data.thumbnail.url,
 							headers: {
+								...sdk.customHeaders,
 								Authorization: sdk.authorizationHeader || '',
 							},
 						}}

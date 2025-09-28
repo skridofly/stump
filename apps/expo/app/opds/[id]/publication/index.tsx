@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { useActiveServer } from '~/components/activeServer'
 import { InfoRow, InfoSection } from '~/components/book/overview'
+import { BorderAndShadow } from '~/components/BorderAndShadow'
 import { TurboImage } from '~/components/Image'
 import {
 	getDateField,
@@ -18,7 +19,6 @@ import { useDynamicHeader } from '~/lib/hooks/useDynamicHeader'
 import { cn } from '~/lib/utils'
 
 import { usePublicationContext } from './context'
-import { BorderAndShadow } from '~/components/BorderAndShadow'
 
 const { Info, Slash, BookCopy, ChevronLeft } = icons
 
@@ -96,6 +96,7 @@ export default function Screen() {
 								source={{
 									uri: thumbnailURL || '',
 									headers: {
+										...sdk.customHeaders,
 										Authorization: sdk.authorizationHeader || '',
 									},
 								}}

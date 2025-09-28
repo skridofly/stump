@@ -311,6 +311,7 @@ const Page = React.memo(
 								source={{
 									uri: pageURL(pageIdx + 1),
 									headers: {
+										...sdk.customHeaders,
 										Authorization: sdk.authorizationHeader || '',
 										[STUMP_SAVE_BASIC_SESSION_HEADER]: 'false',
 									},

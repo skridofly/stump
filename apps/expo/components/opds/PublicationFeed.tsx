@@ -10,12 +10,12 @@ import { useDisplay } from '~/lib/hooks'
 import { cn } from '~/lib/utils'
 
 import { useActiveServer } from '../activeServer'
+import { BorderAndShadow } from '../BorderAndShadow'
 import { TurboImage } from '../Image'
 import RefreshControl from '../RefreshControl'
 import { Text } from '../ui'
 import FeedTitle from './FeedTitle'
 import { getPublicationThumbnailURL } from './utils'
-import { BorderAndShadow } from '../BorderAndShadow'
 
 type Props = {
 	feed: OPDSFeed
@@ -148,6 +148,7 @@ export default function PublicationFeed({ feed, onRefresh, isRefreshing }: Props
 											source={{
 												uri: thumbnailURL || '',
 												headers: {
+													...sdk.customHeaders,
 													Authorization: sdk.authorizationHeader || '',
 												},
 											}}

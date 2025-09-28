@@ -10,9 +10,9 @@ import LinearGradient from 'react-native-linear-gradient'
 import { COLORS } from '~/lib/constants'
 
 import { useActiveServer } from '../activeServer'
+import { BorderAndShadow } from '../BorderAndShadow'
 import { TurboImage } from '../Image'
 import { Text } from '../ui'
-import { BorderAndShadow } from '../BorderAndShadow'
 
 const fragment = graphql(`
 	fragment RecentlyAddedSeriesItem on Series {
@@ -71,6 +71,7 @@ export default function RecentlyAddedSeriesItem({ series }: Props) {
 							source={{
 								uri: data.thumbnail.url,
 								headers: {
+									...sdk.customHeaders,
 									Authorization: sdk.authorizationHeader || '',
 								},
 							}}

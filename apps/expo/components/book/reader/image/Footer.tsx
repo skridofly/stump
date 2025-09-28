@@ -215,6 +215,7 @@ export default function Footer() {
 				urls.map((url) => ({
 					uri: url,
 					headers: {
+						...sdk.customHeaders,
 						Authorization: sdk.authorizationHeader || '',
 						[STUMP_SAVE_BASIC_SESSION_HEADER]: 'false',
 					},

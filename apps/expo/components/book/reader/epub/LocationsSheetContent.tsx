@@ -94,6 +94,7 @@ export default function LocationsSheetContent() {
 									source={{
 										uri: book?.thumbnail.url,
 										headers: {
+											...sdk.customHeaders,
 											Authorization: sdk.authorizationHeader || '',
 										},
 									}}

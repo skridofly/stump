@@ -9,10 +9,10 @@ import { COLORS } from '~/lib/constants'
 import { cn } from '~/lib/utils'
 
 import { useActiveServer } from '../activeServer'
+import { BorderAndShadow } from '../BorderAndShadow'
 import { useGridItemSize } from '../grid/useGridItemSize'
 import { TurboImage } from '../Image'
 import { Text } from '../ui'
-import { BorderAndShadow } from '../BorderAndShadow'
 
 const fragment = graphql(`
 	fragment LibraryGridItem on Library {
@@ -60,6 +60,7 @@ export default function LibraryGridItem({ library }: Props) {
 							source={{
 								uri: uri,
 								headers: {
+									...sdk.customHeaders,
 									Authorization: sdk.authorizationHeader || '',
 								},
 							}}

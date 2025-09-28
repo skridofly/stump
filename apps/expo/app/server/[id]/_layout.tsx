@@ -44,7 +44,11 @@ export default function Screen() {
 				.with({ bearer: P.string }, () => 'api-key' as const)
 				.otherwise(() => 'token' as const)
 
-			const instance = new Api({ baseURL: url, authMethod })
+			const instance = new Api({
+				baseURL: url,
+				authMethod,
+				customHeaders: serverConfig?.customHeaders,
+			})
 			instance.tokens = storedToken || undefined
 			const existingToken = await instance.getOrRefreshTokens()
 

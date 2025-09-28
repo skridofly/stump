@@ -7,9 +7,9 @@ import { Pressable } from 'react-native-gesture-handler'
 import { useDisplay } from '~/lib/hooks'
 
 import { useActiveServer } from '../activeServer'
+import { BorderAndShadow } from '../BorderAndShadow'
 import { TurboImage } from '../Image'
 import { Text } from '../ui'
-import { BorderAndShadow } from '../BorderAndShadow'
 
 const fragment = graphql(`
 	fragment SeriesSearchItem on Series {
@@ -63,6 +63,7 @@ export default function SeriesSearchItem({ series }: Props) {
 						source={{
 							uri: data.thumbnail.url,
 							headers: {
+								...sdk.customHeaders,
 								Authorization: sdk.authorizationHeader || '',
 							},
 						}}

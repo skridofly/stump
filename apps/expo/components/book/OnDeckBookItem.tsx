@@ -8,8 +8,8 @@ import { Pressable } from 'react-native-gesture-handler'
 import LinearGradient from 'react-native-linear-gradient'
 
 import { COLORS } from '~/lib/constants'
-
 import { useListItemSize } from '~/lib/hooks'
+
 import { useActiveServer } from '../activeServer'
 import { BorderAndShadow } from '../BorderAndShadow'
 import { TurboImage } from '../Image'
@@ -73,6 +73,7 @@ function OnDeckBookItem({ book }: Props) {
 							source={{
 								uri: data.thumbnail.url,
 								headers: {
+									...sdk.customHeaders,
 									Authorization: sdk.authorizationHeader || '',
 								},
 							}}

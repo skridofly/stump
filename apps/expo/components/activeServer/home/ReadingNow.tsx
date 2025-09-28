@@ -263,6 +263,7 @@ function ReadingNowItem({ book }: ReadingNowItemProps) {
 						source={{
 							uri: data.thumbnail.url,
 							headers: {
+								...sdk.customHeaders,
 								Authorization: sdk.authorizationHeader || '',
 							},
 						}}

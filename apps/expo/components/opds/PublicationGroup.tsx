@@ -10,11 +10,11 @@ import { useDisplay } from '~/lib/hooks'
 import { cn } from '~/lib/utils'
 
 import { useActiveServer } from '../activeServer'
+import { BorderAndShadow } from '../BorderAndShadow'
 import { TurboImage } from '../Image'
 import { Text } from '../ui'
 import EmptyFeed from './EmptyFeed'
 import { FeedComponentOptions } from './types'
-import { BorderAndShadow } from '../BorderAndShadow'
 
 type Props = {
 	group: OPDSFeedGroup
@@ -106,6 +106,7 @@ export default function PublicationGroup({
 												source={{
 													uri: thumbnailURL || '',
 													headers: {
+														...sdk.customHeaders,
 														Authorization: sdk.authorizationHeader || '',
 														[STUMP_SAVE_BASIC_SESSION_HEADER]: 'false',
 													},
