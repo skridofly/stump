@@ -2110,7 +2110,7 @@ dependencies = [
 
 [[package]]
 name = "email"
-version = "0.0.11"
+version = "0.0.12"
 dependencies = [
  "async-graphql",
  "handlebars",
@@ -2898,7 +2898,7 @@ dependencies = [
 
 [[package]]
 name = "graphql"
-version = "0.0.11"
+version = "0.0.12"
 dependencies = [
  "alphanumeric-sort",
  "async-graphql",
@@ -7831,7 +7831,7 @@ dependencies = [
 
 [[package]]
 name = "stump_core"
-version = "0.0.11"
+version = "0.0.12"
 dependencies = [
  "alphanumeric-sort",
  "async-channel",
@@ -7913,7 +7913,7 @@ dependencies = [
 
 [[package]]
 name = "stump_server"
-version = "0.0.11"
+version = "0.0.12"
 dependencies = [
  "alphanumeric-sort",
  "async-graphql",
