@@ -92,12 +92,6 @@ pub struct BufferResponse {
 	pub data: Vec<u8>,
 }
 
-impl BufferResponse {
-	pub fn new(content_type: ContentType, data: Vec<u8>) -> Self {
-		Self { content_type, data }
-	}
-}
-
 impl From<(ContentType, Vec<u8>)> for BufferResponse {
 	fn from((content_type, data): (ContentType, Vec<u8>)) -> Self {
 		Self { content_type, data }
@@ -196,7 +190,10 @@ mod tests {
 
 	#[test]
 	fn test_buffer_response() {
-		let response = BufferResponse::new(ContentType::HTML, b"Hello, world!".to_vec());
+		let response = BufferResponse {
+			content_type: ContentType::HTML,
+			data: b"Hello, world!".to_vec(),
+		};
 		let axum_response = response.into_response();
 
 		assert_eq!(
