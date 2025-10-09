@@ -6,13 +6,13 @@ import { AppDataUsageLink } from '~/components/appSettings/management'
 import {
 	AppLanguage,
 	AppTheme,
-	CachePolicySelect,
 	DefaultServer,
+	ImageCacheActions,
 	MaskURLs,
+	PerformanceMonitor,
 	ReaderSettingsLink,
 	ReduceAnimations,
 	ThumbnailRatio,
-	PerformanceMonitor,
 } from '~/components/appSettings/preferences'
 import AppPrimaryColor from '~/components/appSettings/preferences/AppPrimaryColor'
 import { StumpEnabled } from '~/components/appSettings/stump'
@@ -57,7 +57,7 @@ export default function Screen() {
 
 				<View>
 					<Text className="mb-3 text-foreground-muted">Debug</Text>
-					<CachePolicySelect />
+					<ImageCacheActions />
 					<PerformanceMonitor />
 					<ReduceAnimations />
 					<MaskURLs />
