@@ -1,5 +1,6 @@
 import { useSDK } from '@stump/client'
 import { useRouter } from 'expo-router'
+import { X } from 'lucide-react-native'
 import { useCallback, useEffect } from 'react'
 import { View } from 'react-native'
 import Animated, {
@@ -10,29 +11,25 @@ import Animated, {
 } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { useActiveServer } from '~/components/activeServer'
 import { BorderAndShadow } from '~/components/BorderAndShadow'
 import { TurboImage } from '~/components/Image'
-import { Button, Heading, icons, Label, Text } from '~/components/ui'
+import { Button, Heading, Icon, Label, Text } from '~/components/ui'
 import { COLORS } from '~/lib/constants'
 import { useDisplay } from '~/lib/hooks'
 import { cn } from '~/lib/utils'
 import { usePreferencesStore } from '~/stores'
 
-import { NextInSeriesBookRef } from './context'
-
-const { X } = icons
+import { NextInSeriesBookRef, useImageBasedReader } from './context'
 
 type Props = {
 	isVisible: boolean
 	book: NextInSeriesBookRef
 	onClose: () => void
 }
+
 export default function NextUpOverlay({ isVisible, book, onClose }: Props) {
 	const { sdk } = useSDK()
-	const {
-		activeServer: { id: serverID },
-	} = useActiveServer()
+	const { serverId } = useImageBasedReader()
 
 	const router = useRouter()
 	const thumbnailRatio = usePreferencesStore((state) => state.thumbnailRatio)
@@ -61,13 +58,13 @@ export default function NextUpOverlay({ isVisible, book, onClose }: Props) {
 		router.replace(
 			{
 				// @ts-expect-error: It is fine, expects string literal with [id]
-				pathname: `/server/${serverID}/books/${book.id}`,
+				pathname: `/server/${serverId}/books/${book.id}`,
 			},
 			{
 				withAnchor: true,
 			},
 		)
-	}, [router, serverID, book.id])
+	}, [router, serverId, book.id])
 
 	const insets = useSafeAreaInsets()
 
@@ -92,7 +89,8 @@ export default function NextUpOverlay({ isVisible, book, onClose }: Props) {
 						onPress={() => onClose()}
 					>
 						{({ pressed }) => (
-							<X
+							<Icon
+								as={X}
 								style={{
 									opacity: pressed ? 0.85 : 1,
 									// @ts-expect-error: This is fine

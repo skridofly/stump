@@ -2,9 +2,11 @@ import '~/global.css'
 
 import { DarkTheme, DefaultTheme, Theme, ThemeProvider } from '@react-navigation/native'
 import { PortalHost } from '@rn-primitives/portal'
+import * as Sentry from '@sentry/react-native'
 import dayjs from 'dayjs'
 import duration from 'dayjs/plugin/duration'
 import relativeTime from 'dayjs/plugin/relativeTime'
+import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator'
 import { Stack } from 'expo-router'
 import * as SplashScreen from 'expo-splash-screen'
 import LottieView from 'lottie-react-native'
@@ -13,10 +15,14 @@ import { Platform, View } from 'react-native'
 import { SystemBars } from 'react-native-edge-to-edge'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { KeyboardProvider } from 'react-native-keyboard-controller'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import darkSplash from '~/assets/splash/dark.json'
 import lightSplash from '~/assets/splash/light.json'
+import { PerformanceMonitor } from '~/components/PerformanceMonitor'
 import { BottomSheet } from '~/components/ui/bottom-sheet'
+import { db } from '~/db'
+import migrations from '~/drizzle/migrations'
 import { setAndroidNavigationBar } from '~/lib/android-navigation-bar'
 import { NAV_THEME, useColors } from '~/lib/constants'
 import { useColorScheme } from '~/lib/useColorScheme'
@@ -56,13 +62,19 @@ export default function RootLayout() {
 	const [isAnimationReady, setIsAnimationReady] = React.useState(false)
 	const [isReady, setIsReady] = React.useState(false)
 
+	const { error } = useMigrations(db, migrations)
+
 	const animation = React.useRef<LottieView>(null)
 	const shouldHideStatusBar = useHideStatusBar()
 	const hasMounted = React.useRef(false)
 
 	const colors = useColors()
+	const insets = useSafeAreaInsets()
 
-	const animationEnabled = usePreferencesStore((state) => !state.reduceAnimations)
+	const { performanceMonitor, animationEnabled } = usePreferencesStore((state) => ({
+		animationEnabled: !state.reduceAnimations,
+		performanceMonitor: state.performanceMonitor,
+	}))
 
 	useIsomorphicLayoutEffect(() => {
 		if (hasMounted.current) {
@@ -76,6 +88,12 @@ export default function RootLayout() {
 			setIsAnimationReady(true)
 		})
 	}, [])
+
+	React.useEffect(() => {
+		if (error) {
+			Sentry.captureException(error)
+		}
+	}, [error])
 
 	if (!isColorSchemeLoaded || !isAnimationReady) {
 		return null
@@ -105,6 +123,7 @@ export default function RootLayout() {
 	return (
 		<GestureHandlerRootView style={{ flex: 1 }}>
 			<ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
+				{performanceMonitor && <PerformanceMonitor withCPU style={{ top: insets.top || 12 }} />}
 				<BottomSheet.Provider>
 					<KeyboardProvider>
 						<SystemBars style={isDarkColorScheme ? 'light' : 'dark'} hidden={shouldHideStatusBar} />
@@ -145,6 +164,18 @@ export default function RootLayout() {
 								options={{
 									headerShown: false,
 									animation: animationEnabled ? 'default' : 'none',
+								}}
+							/>
+							<Stack.Screen
+								name="offline"
+								options={{
+									headerShown: false,
+									title: '',
+									animation: animationEnabled ? 'default' : 'none',
+									autoHideHomeIndicator: shouldHideStatusBar,
+									contentStyle: {
+										backgroundColor: colors.background.DEFAULT,
+									},
 								}}
 							/>
 						</Stack>

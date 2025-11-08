@@ -1,17 +1,17 @@
 import { useSDK, useSuspenseGraphQL } from '@stump/client'
-import { BookByIdQuery, graphql } from '@stump/graphql'
+import { BookByIdQuery, graphql, UserPermission } from '@stump/graphql'
 import dayjs from 'dayjs'
 import duration from 'dayjs/plugin/duration'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router'
-import { ChevronLeft } from 'lucide-react-native'
-import { useLayoutEffect } from 'react'
+import { ChevronLeft, Loader2 } from 'lucide-react-native'
+import { useCallback, useLayoutEffect, useState } from 'react'
 import { Platform, Pressable, View } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { stripHtml } from 'string-strip-html'
 
-import { useActiveServer } from '~/components/activeServer'
+import { useActiveServer, useStumpServer } from '~/components/activeServer'
 import { BookMetaLink } from '~/components/book'
 import { BookActionMenu } from '~/components/book/overview'
 import { InfoRow, InfoSection, InfoStat } from '~/components/book/overview'
@@ -22,6 +22,7 @@ import RefreshControl from '~/components/RefreshControl'
 import { Button, Heading, Text } from '~/components/ui'
 import { Icon } from '~/components/ui/icon'
 import { formatBytes, parseGraphQLDecimal } from '~/lib/format'
+import { useDownload, useIsBookDownloaded } from '~/lib/hooks'
 import { cn } from '~/lib/utils'
 import { usePreferencesStore } from '~/stores'
 
@@ -75,21 +76,33 @@ const query = graphql(`
 				locator {
 					chapterTitle
 					locations {
+						fragments
 						position
+						progression
 						totalProgression
+						cssSelector
+						partialCfi
 					}
 					href
+					title
+					type
 				}
 				startedAt
 				elapsedSeconds
+				updatedAt
 			}
 			readHistory {
 				completedAt
 			}
 			resolvedName
 			series {
+				id
 				resolvedName
 				mediaCount
+			}
+			library {
+				id
+				name
 			}
 			seriesPosition
 			size
@@ -114,14 +127,46 @@ export default function Screen() {
 	const {
 		activeServer: { id: serverID },
 	} = useActiveServer()
+	const { checkPermission } = useStumpServer()
 	const { sdk } = useSDK()
 	const {
 		data: { mediaById: book },
-		isRefetching,
 		refetch,
 	} = useSuspenseGraphQL(query, ['bookById', bookID], {
 		id: bookID,
 	})
+	const { downloadBook, isDownloading } = useDownload({ serverId: serverID })
+
+	const [isRefetching, setIsRefetching] = useState(false)
+
+	// Note: I am not binding the refresh control to the isRefetching state from useSuspenseGraphQL because
+	// I don't want background refetches to trigger the refresh control spinner
+	const onRefresh = () => {
+		setIsRefetching(true)
+		refetch().finally(() => {
+			setIsRefetching(false)
+		})
+	}
+
+	const isDownloaded = useIsBookDownloaded(bookID, serverID)
+
+	const accentColor = usePreferencesStore((state) => state.accentColor)
+
+	const onDownloadBook = useCallback(async () => {
+		if (isDownloaded || !book || isDownloading) return
+
+		return await downloadBook({
+			id: book.id,
+			extension: book.extension,
+			libraryId: book.library.id,
+			libraryName: book.library.name,
+			seriesId: book.series.id,
+			seriesName: book.series.resolvedName,
+			metadata: book.metadata || undefined,
+			bookName: book.resolvedName,
+			readProgress: book.readProgress,
+		})
+	}, [isDownloaded, downloadBook, book, isDownloading])
 
 	const router = useRouter()
 	const thumbnailRatio = usePreferencesStore((state) => state.thumbnailRatio)
@@ -259,7 +304,7 @@ export default function Screen() {
 		>
 			<ScrollView
 				className="flex-1 bg-background px-6"
-				refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
+				refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={onRefresh} />}
 				contentInsetAdjustmentBehavior="automatic"
 			>
 				<View
@@ -322,9 +367,28 @@ export default function Screen() {
 						>
 							{renderRead()}
 						</Button>
-						<Button variant="secondary" disabled>
-							<Text>Download</Text>
-						</Button>
+						{checkPermission(UserPermission.DownloadFile) && !isDownloaded && (
+							<Button
+								variant="secondary"
+								disabled={isDownloaded || isDownloading}
+								onPress={onDownloadBook}
+								className="flex-row gap-2"
+							>
+								{isDownloading && (
+									<View className="pointer-events-none animate-spin">
+										<Icon
+											className="h-5 w-5"
+											as={Loader2}
+											style={{
+												// @ts-expect-error: It's fine
+												color: accentColor,
+											}}
+										/>
+									</View>
+								)}
+								<Text>Download</Text>
+							</Button>
+						)}
 					</View>
 
 					{progression && (

@@ -171,5 +171,97 @@ class ReadiumModule : Module() {
         view.finalizeProps()
       }
     }
+
+    View(PDFView::class) {
+      Events("onLocatorChange", "onPageChange", "onBookLoaded", "onMiddleTouch", "onError")
+
+      Prop("bookId") { view: PDFView, prop: String ->
+        if (view.bookService == null) {
+          view.bookService = bookService
+        }
+        view.pendingProps.bookId = prop
+      }
+
+      Prop("locator") { view: PDFView, prop: Map<String, Any?>? ->
+        if (prop == null) {
+          view.pendingProps.locator = null
+          return@Prop
+        }
+        val locator = Locator.fromJSON(JSONObject(prop)) ?: return@Prop
+        view.pendingProps.locator = locator
+      }
+
+      Prop("initialLocator") { view: PDFView, prop: Map<String, Any?>? ->
+        if (prop == null) {
+          view.pendingProps.initialLocator = null
+          return@Prop
+        }
+        val locator = Locator.fromJSON(JSONObject(prop)) ?: return@Prop
+        view.pendingProps.initialLocator = locator
+      }
+
+      Prop("url") { view: PDFView, prop: String ->
+        view.pendingProps.url = prop
+      }
+
+      Prop("backgroundColor") { view: PDFView, prop: String ->
+        view.pendingProps.background = Color.parseColor(prop)
+      }
+
+      Prop("pageSpacing") { view: PDFView, prop: Double ->
+        view.pendingProps.pageSpacing = prop
+      }
+
+      Prop("scrollAxis") { view: PDFView, prop: String ->
+        view.pendingProps.scrollAxis = prop
+      }
+
+      Prop("scroll") { view: PDFView, prop: Boolean ->
+        view.pendingProps.scroll = prop
+      }
+
+      Prop("readingProgression") { view: PDFView, prop: String ->
+        view.pendingProps.readingProgression = when (prop) {
+          "rtl" -> org.readium.r2.shared.publication.ReadingProgression.RTL
+          else -> org.readium.r2.shared.publication.ReadingProgression.LTR
+        }
+      }
+      
+      Prop("spread") { view: PDFView, prop: String ->
+        view.pendingProps.spread = when (prop) {
+          "never" -> org.readium.r2.navigator.preferences.Spread.NEVER
+          "always" -> org.readium.r2.navigator.preferences.Spread.ALWAYS
+          else -> org.readium.r2.navigator.preferences.Spread.AUTO
+        }
+      }
+
+      AsyncFunction("goToLocation") { view: PDFView, locatorMap: Map<String, Any> ->
+        val navigator = view.navigator ?: return@AsyncFunction
+        val jsonLocator = JSONObject(locatorMap)
+        val locator = Locator.fromJSON(jsonLocator) ?: throw Exception("Failed to parse locator from JSON")
+        view.goToLocation(locator)
+      }
+
+      AsyncFunction("goToPage") { view: PDFView, page: Int ->
+        view.goToPage(page)
+      }
+
+      AsyncFunction("goForward") { view: PDFView ->
+        view.goForward()
+      }
+
+      AsyncFunction("goBackward") { view: PDFView ->
+        view.goBackward()
+      }
+
+      AsyncFunction("destroy") { view: PDFView ->
+        Log.d("ReadiumModule", "PDF destroy called - cleaning up PDFView resources")
+        view.destroyNavigator()
+      }
+
+      OnViewDidUpdateProps { view: PDFView ->
+        view.finalizeProps()
+      }
+    }
   }
 }

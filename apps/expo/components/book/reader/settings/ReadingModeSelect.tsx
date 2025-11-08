@@ -1,19 +1,16 @@
 import { ReadingMode } from '@stump/graphql'
+import { ChevronsUpDown } from 'lucide-react-native'
 import { useState } from 'react'
 import { View } from 'react-native'
 import * as DropdownMenu from 'zeego/dropdown-menu'
 
-import { icons, Text } from '~/components/ui'
+import { Icon, Text } from '~/components/ui'
 import { cn } from '~/lib/utils'
-
-const { ChevronsUpDown } = icons
 
 type Props = {
 	mode: ReadingMode
 	onChange: (mode: ReadingMode) => void
 }
-
-// TODO: Remove hardcoded disabled values and support vertical continuous scrolling
 
 export default function ReadingModeSelect({ mode, onChange }: Props) {
 	const [isOpen, setIsOpen] = useState(false)
@@ -26,7 +23,7 @@ export default function ReadingModeSelect({ mode, onChange }: Props) {
 				<DropdownMenu.Trigger>
 					<View className={cn('flex-row items-center gap-1.5', { 'opacity-80': isOpen })}>
 						<Text>{READ_FLOW[mode]}</Text>
-						<ChevronsUpDown className="h-5 text-foreground-muted" />
+						<Icon as={ChevronsUpDown} className="h-5 text-foreground-muted" />
 					</View>
 				</DropdownMenu.Trigger>
 
@@ -51,7 +48,6 @@ export default function ReadingModeSelect({ mode, onChange }: Props) {
 						key="continuous:vertical"
 						value={mode === ReadingMode.ContinuousVertical}
 						onValueChange={() => onChange(ReadingMode.ContinuousVertical)}
-						disabled
 					>
 						<DropdownMenu.ItemTitle>Scroll (Vertical)</DropdownMenu.ItemTitle>
 					</DropdownMenu.CheckboxItem>

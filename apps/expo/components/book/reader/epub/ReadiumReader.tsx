@@ -2,13 +2,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { useActiveServer } from '~/components/activeServer'
+import { useDownload } from '~/lib/hooks'
 import { BookMetadata, ReadiumLocator, ReadiumView, ReadiumViewRef } from '~/modules/readium'
 import { useReaderStore } from '~/stores'
-import { useDownload } from '~/stores/download'
-import { useEpubLocationStore, useEpubTheme } from '~/stores/epub'
+import { trimFragmentFromHref, useEpubLocationStore, useEpubTheme } from '~/stores/epub'
 
 import { EbookReaderBookRef } from '../image/context'
+import { OfflineCompatibleReader } from '../types'
 import ReadiumFooter, { FOOTER_HEIGHT } from './ReadiumFooter'
 import ReadiumHeader, { HEADER_HEIGHT } from './ReadiumHeader'
 
@@ -25,23 +25,31 @@ type Props = {
 	 * Whether the reader should be in incognito mode
 	 */
 	incognito?: boolean
-
+	/**
+	 * Callback when the location changes
+	 */
 	onLocationChanged: (locator: ReadiumLocator, percentage: number) => void
-}
+	/**
+	 * The URI of the offline book, if available
+	 */
+	offlineUri?: string
+} & OfflineCompatibleReader
 
-// TODO: Don't assume loading book. Intake an optional localUri which effectively unlocks offline reading
+// FIXME: There is a pretty gnarly bug for single-page EPUBs where Readium doesn't do a great job of
+// reporting the location back. It manifests as the chapterTitle always being missing (and a "fix" I added
+// makes it show the _first_ chapter title all the time). Need to investigate further, the only idea I've had
+// is to try and detect single-page EPUBs and handle them differently (e.g., percentage or position-based tracking?)
+
 export default function ReadiumReader({
 	book,
 	initialLocator,
 	incognito,
 	onLocationChanged,
+	...ctx
 }: Props) {
-	const {
-		activeServer: { id },
-	} = useActiveServer()
-	const { downloadBook } = useDownload()
+	const { downloadBook } = useDownload({ serverId: ctx.serverId })
 
-	const [localUri, setLocalUri] = useState<string | null>(null)
+	const [localUri, setLocalUri] = useState<string | null>(() => ctx.offlineUri || null)
 	const [locator, setLocator] = useState<ReadiumLocator | undefined>(() => initialLocator)
 
 	const controlsVisible = useReaderStore((state) => state.showControls)
@@ -92,13 +100,25 @@ export default function ReadiumReader({
 		onLocationChange: store.onLocationChange,
 		cleanup: store.onUnload,
 		storeActions: store.storeActions,
+		storeHeaders: store.storeHeaders,
+		toc: store.toc,
 	}))
 
 	useEffect(() => {
 		if (localUri) return
 
 		async function download() {
-			const result = await downloadBook(book)
+			const result = await downloadBook({
+				...book,
+				bookName: book.name,
+				libraryId: book.library?.id,
+				libraryName: book.library?.name,
+				seriesId: book.series?.id,
+				seriesName: book.series?.resolvedName,
+				toc: book.ebook?.toc,
+				readProgress: book.readProgress,
+			})
+
 			if (result) {
 				setLocalUri(result)
 			} else {
@@ -108,6 +128,14 @@ export default function ReadiumReader({
 
 		download()
 	}, [localUri, book, downloadBook, store])
+
+	useEffect(
+		() => {
+			store.storeHeaders(ctx.requestHeaders)
+		},
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+		[ctx.requestHeaders],
+	)
 
 	useEffect(
 		() => {
@@ -132,6 +160,15 @@ export default function ReadiumReader({
 
 	const handleLocationChanged = useCallback(
 		(locator: ReadiumLocator) => {
+			if (!locator.chapterTitle) {
+				const tocItem = store.toc.find(
+					(item) => trimFragmentFromHref(item.content) === locator.href,
+				)
+				if (tocItem) {
+					locator.chapterTitle = tocItem.label
+				}
+			}
+
 			store.onLocationChange(locator)
 			setLocator(locator)
 
@@ -158,6 +195,16 @@ export default function ReadiumReader({
 		[],
 	)
 
+	const headerUrls = useMemo(() => {
+		const prefix = ctx.offlineUri
+			? `/offline/${book.id}`
+			: `/server/${ctx.serverId}/books/${book.id}`
+		return {
+			settingsUrl: `${prefix}/ebook-settings`,
+			locationsUrl: `${prefix}/ebook-locations-modal`,
+		}
+	}, [ctx, book.id])
+
 	const insets = useSafeAreaInsets()
 
 	if (!localUri) return null
@@ -170,10 +217,7 @@ export default function ReadiumReader({
 				filter: `brightness(${brightness * 100}%)`,
 			}}
 		>
-			<ReadiumHeader
-				settingsUrl={`/server/${id}/books/${book.id}/ebook-settings`}
-				locationsUrl={`/server/${id}/books/${book.id}/ebook-locations-modal`}
-			/>
+			<ReadiumHeader {...headerUrls} />
 
 			<ReadiumView
 				ref={readerRef}

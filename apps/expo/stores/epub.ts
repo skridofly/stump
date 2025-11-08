@@ -38,6 +38,12 @@ export const parseToc = (toc?: string[]): TableOfContentsItem[] => {
 	return parsedToc
 }
 
+export const trimFragmentFromHref = (href: string) => {
+	return href.split('#')[0]
+}
+
+export const parseFragmentFromHref = (href: string) => href.split('#')
+
 export type EmbeddedMetadata = Pick<BookMetadata, 'title' | 'author' | 'language' | 'publisher'>
 
 export type IEpubLocationStore = {
@@ -45,6 +51,9 @@ export type IEpubLocationStore = {
 	storeBook: (book: EbookReaderBookRef) => void
 	actions?: ReadiumViewRef | null
 	storeActions: (actions: ReadiumViewRef | null) => void
+
+	requestHeaders?: () => Record<string, string>
+	storeHeaders: (callback: (() => Record<string, string>) | undefined) => void
 
 	currentChapter: string
 	position: number
@@ -61,6 +70,9 @@ export type IEpubLocationStore = {
 export const useEpubLocationStore = create<IEpubLocationStore>((set) => ({
 	storeBook: (book) => set({ book }),
 	storeActions: (ref) => set({ actions: ref }),
+
+	requestHeaders: undefined,
+	storeHeaders: (callback) => set({ requestHeaders: callback }),
 
 	currentChapter: '',
 	position: 0,

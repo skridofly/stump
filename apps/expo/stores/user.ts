@@ -18,6 +18,8 @@ type MobilePreferencesStore = {
 	thumbnailRatio: number
 	performanceMonitor: boolean
 	accentColor?: string | undefined
+	showCuratedDownloads?: boolean | undefined
+	preferNativePdf?: boolean | undefined
 	/**
 	 * Patch the store with new values.
 	 */
@@ -41,6 +43,8 @@ export const usePreferencesStore = create<MobilePreferencesStore>()(
 			thumbnailRatio: 2 / 3,
 			accentColor: undefined,
 			performanceMonitor: false,
+			showCuratedDownloads: true,
+			preferNativePdf: false,
 			patch: (data) => set(data),
 		}),
 		{
