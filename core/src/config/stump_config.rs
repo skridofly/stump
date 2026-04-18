@@ -31,6 +31,7 @@ pub mod env_keys {
 	pub const PDFIUM_KEY: &str = "PDFIUM_PATH";
 	pub const ENABLE_SWAGGER_KEY: &str = "ENABLE_SWAGGER_UI";
 	pub const ENABLE_KOREADER_SYNC_KEY: &str = "ENABLE_KOREADER_SYNC";
+	pub const ENABLE_KOBO_SYNC_KEY: &str = "ENABLE_KOBO_SYNC";
 	pub const ENABLE_OPDS_PROGRESSION_KEY: &str = "ENABLE_OPDS_PROGRESSION";
 	pub const HASH_COST_KEY: &str = "HASH_COST";
 	pub const SESSION_TTL_KEY: &str = "SESSION_TTL";
@@ -56,6 +57,7 @@ pub mod env_keys {
 	pub const OIDC_EXTRA_AUDIENCES_KEY: &str = "STUMP_OIDC_EXTRA_AUDIENCES";
 	pub const BOOK_COMPLETION_DEDUP_TIMEOUT_SECS_KEY: &str =
 		"STUMP_BOOK_COMPLETION_DEDUP_TIMEOUT_SECS";
+	pub const TRUST_PROXY_HEADERS_KEY: &str = "STUMP_TRUST_PROXY_HEADERS";
 }
 use env_keys::*;
 
@@ -181,6 +183,11 @@ pub struct StumpConfig {
 	#[env_key(ENABLE_KOREADER_SYNC_KEY)]
 	pub enable_koreader_sync: bool,
 
+	/// Indicates if the Kobo sync feature should be enabled.
+	#[default_value(false)]
+	#[env_key(ENABLE_KOBO_SYNC_KEY)]
+	pub enable_kobo_sync: bool,
+
 	/// Indicates if OPDS page access should automatically track reading progression.
 	/// When disabled, clients loading/preloading pages won't trigger progress updates.
 	#[default_value(false)]
@@ -281,6 +288,11 @@ pub struct StumpConfig {
 	#[default_value(DEFAULT_BOOK_COMPLETION_DEDUP_TIMEOUT_SECS)]
 	#[env_key(BOOK_COMPLETION_DEDUP_TIMEOUT_SECS_KEY)]
 	pub book_completion_dedup_timeout_secs: i64,
+
+	/// Whether to trust proxy headers for determining client IP and scheme (e.g., X-Forwarded-For)
+	#[default_value(false)]
+	#[env_key(TRUST_PROXY_HEADERS_KEY)]
+	pub trust_proxy_headers: bool,
 }
 
 impl StumpConfig {
@@ -459,6 +471,7 @@ mod tests {
 			pdfium_path: Some("not_a_path_to_pdfium".to_string()),
 			enable_swagger: Some(false),
 			enable_koreader_sync: Some(false),
+			enable_kobo_sync: Some(false),
 			password_hash_cost: None,
 			session_ttl: None,
 			access_token_ttl: None,
@@ -477,6 +490,7 @@ mod tests {
 			pdf_high_quality: None,
 			oidc: None,
 			book_completion_dedup_timeout_secs: None,
+			trust_proxy_headers: None,
 		};
 		partial_config.apply_to_config(&mut config);
 
@@ -507,6 +521,7 @@ mod tests {
 				pdfium_path: Some("not_a_path_to_pdfium".to_string()),
 				enable_swagger: Some(false),
 				enable_koreader_sync: Some(false),
+				enable_kobo_sync: Some(false),
 				enable_opds_progression: Some(false),
 				password_hash_cost: Some(DEFAULT_PASSWORD_HASH_COST),
 				session_ttl: Some(DEFAULT_SESSION_TTL),
@@ -530,6 +545,7 @@ mod tests {
 				book_completion_dedup_timeout_secs: Some(
 					DEFAULT_BOOK_COMPLETION_DEDUP_TIMEOUT_SECS
 				),
+				trust_proxy_headers: Some(false),
 			}
 		);
 
@@ -575,6 +591,7 @@ mod tests {
 						pdfium_path: None,
 						enable_swagger: true,
 						enable_koreader_sync: false,
+						enable_kobo_sync: false,
 						enable_opds_progression: false,
 						password_hash_cost: 1,
 						session_ttl: DEFAULT_SESSION_TTL,
@@ -597,6 +614,7 @@ mod tests {
 						oidc: None,
 						book_completion_dedup_timeout_secs:
 							DEFAULT_BOOK_COMPLETION_DEDUP_TIMEOUT_SECS,
+						trust_proxy_headers: false,
 					}
 				);
 			},

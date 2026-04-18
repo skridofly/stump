@@ -24,6 +24,7 @@ use walkdir::DirEntry;
 
 use crate::{
 	config::StumpConfig,
+	database::SQLITE_BIND_LIMIT,
 	error::{CoreError, CoreResult},
 	event::CreatedMedia,
 	filesystem::{
@@ -31,7 +32,7 @@ use crate::{
 		scanner::options::{BookVisitOperation, CustomVisitResult},
 		series::{BuiltSeries, SeriesBuilder},
 	},
-	job::{error::JobError, JobExecuteLog, JobProgress, WorkerCtx, WorkerSendExt},
+	job::{error::JobError, JobContext, JobExecuteLog, JobProgress},
 	CoreEvent,
 };
 
@@ -239,7 +240,7 @@ pub(crate) struct MediaOperationOutput {
 /// Handles missing media by updating the database with the latest information. A media is
 /// considered missing if it was previously marked as ready and is no longer found on disk.
 pub(crate) async fn handle_missing_media(
-	ctx: &WorkerCtx,
+	ctx: &JobContext,
 	series_id: &str,
 	paths: Vec<PathBuf>,
 ) -> MediaOperationOutput {
@@ -250,36 +251,40 @@ pub(crate) async fn handle_missing_media(
 		return output;
 	}
 
-	let _affected_rows = media::Entity::update_many()
-		.filter(media::Column::SeriesId.eq(series_id.to_string()))
-		.filter(
-			media::Column::Path.is_in(
-				paths
-					.iter()
-					.map(|p| p.to_string_lossy().to_string())
-					.collect::<Vec<String>>(),
-			),
-		)
-		.col_expr(
-			media::Column::Status,
-			Expr::value(FileStatus::Missing.to_string()),
-		)
-		.exec(ctx.conn.as_ref())
-		.await
-		.map_or_else(
-			|error| {
-				tracing::error!(error = ?error, "Failed to update missing media");
-				output.logs.push(JobExecuteLog::error(format!(
-					"Failed to update missing media: {:?}",
-					error.to_string()
-				)));
-				0
-			},
-			|res| {
-				output.updated_media += res.rows_affected;
-				res.rows_affected
-			},
-		);
+	let path_strings: Vec<String> = paths
+		.iter()
+		.map(|p| p.to_string_lossy().to_string())
+		.collect();
+
+	for (i, chunk) in path_strings.chunks(SQLITE_BIND_LIMIT).enumerate() {
+		let _affected_rows = media::Entity::update_many()
+			.filter(media::Column::SeriesId.eq(series_id.to_string()))
+			.filter(media::Column::Path.is_in(chunk.to_vec()))
+			.col_expr(
+				media::Column::Status,
+				Expr::value(FileStatus::Missing.to_string()),
+			)
+			.exec(ctx.conn())
+			.await
+			.map_or_else(
+				|error| {
+					tracing::error!(
+						chunk = i + 1,
+						?error,
+						"Failed to update missing media chunk"
+					);
+					output.logs.push(JobExecuteLog::error(format!(
+						"Failed to update missing media: {:?}",
+						error.to_string()
+					)));
+					0
+				},
+				|res| {
+					output.updated_media += res.rows_affected;
+					res.rows_affected
+				},
+			);
+	}
 
 	output
 }
@@ -288,7 +293,7 @@ pub(crate) async fn handle_missing_media(
 /// media is considered restored if it was previously marked as missing and has been
 /// found on disk.
 pub(crate) async fn handle_restored_media(
-	ctx: &WorkerCtx,
+	ctx: &JobContext,
 	series_id: &str,
 	ids: Vec<String>,
 ) -> MediaOperationOutput {
@@ -299,32 +304,37 @@ pub(crate) async fn handle_restored_media(
 		return output;
 	}
 
-	let _affected_series = media::Entity::update_many()
-		.filter(media::Column::SeriesId.eq(series_id.to_string()))
-		.filter(
-			media::Column::Id
-				.is_in(ids.iter().map(|id| id.to_string()).collect::<Vec<String>>()),
-		)
-		.col_expr(
-			media::Column::Status,
-			Expr::value(FileStatus::Ready.to_string()),
-		)
-		.exec(ctx.conn.as_ref())
-		.await
-		.map_or_else(
-			|error| {
-				tracing::error!(error = ?error, "Failed to update restored media");
-				output.logs.push(JobExecuteLog::error(format!(
-					"Failed to update restored media: {:?}",
-					error.to_string()
-				)));
-				0
-			},
-			|res| {
-				output.updated_media += res.rows_affected;
-				res.rows_affected
-			},
-		);
+	let id_strings: Vec<String> = ids.iter().map(|id| id.to_string()).collect();
+
+	for (i, chunk) in id_strings.chunks(SQLITE_BIND_LIMIT).enumerate() {
+		let _affected_series = media::Entity::update_many()
+			.filter(media::Column::SeriesId.eq(series_id.to_string()))
+			.filter(media::Column::Id.is_in(chunk.to_vec()))
+			.col_expr(
+				media::Column::Status,
+				Expr::value(FileStatus::Ready.to_string()),
+			)
+			.exec(ctx.conn())
+			.await
+			.map_or_else(
+				|error| {
+					tracing::error!(
+						chunk = i + 1,
+						?error,
+						"Failed to update restored media chunk"
+					);
+					output.logs.push(JobExecuteLog::error(format!(
+						"Failed to update restored media: {:?}",
+						error.to_string()
+					)));
+					0
+				},
+				|res| {
+					output.updated_media += res.rows_affected;
+					res.rows_affected
+				},
+			);
+	}
 
 	output
 }
@@ -610,7 +620,7 @@ pub(crate) async fn safely_build_and_insert_media(
 		library_config,
 		max_concurrency,
 	}: MediaBuildOperation,
-	worker_ctx: &WorkerCtx,
+	worker_ctx: &JobContext,
 	paths: Vec<PathBuf>,
 ) -> Result<MediaOperationOutput, JobError> {
 	if paths.is_empty() {
@@ -661,7 +671,7 @@ pub(crate) async fn safely_build_and_insert_media(
 					?path,
 					"(Chunk {chunk_index}, Book {book_index}) Starting media build"
 				);
-				build_book(&path, &series_id, None, library_config, &worker_ctx.config)
+				build_book(&path, &series_id, None, library_config, worker_ctx.config())
 					.await
 					.map_err(|e| (e, path.clone()))
 			};
@@ -719,22 +729,19 @@ pub(crate) async fn safely_build_and_insert_media(
 			tracing::warn!(?book, "Book has no path?");
 			continue;
 		};
-		match create_media(&worker_ctx.conn, book).await {
+		match create_media(worker_ctx.conn(), book).await {
 			Ok(created_media) => {
+				// TODO(metadata-fetching): Track this as needing fetching (assuming enabled)
 				output.created_media += 1;
-				worker_ctx.send_batch(vec![
-					JobProgress::subtask_position(
-						atomic_cursor.fetch_add(1, Ordering::SeqCst) as i32,
-						task_count,
-					)
-					.into_worker_send(),
-					CoreEvent::CreatedMedia(CreatedMedia {
-						id: created_media.id,
-						series_id: series_id.clone(),
-						library_id: library_id.clone(),
-					})
-					.into_worker_send(),
-				]);
+				worker_ctx.report_progress(JobProgress::subtask_position(
+					atomic_cursor.fetch_add(1, Ordering::SeqCst) as i32,
+					task_count,
+				));
+				worker_ctx.emit_event(CoreEvent::CreatedMedia(CreatedMedia {
+					id: created_media.id,
+					series_id: series_id.clone(),
+					library_id: library_id.clone(),
+				}));
 			},
 			Err(e) => {
 				worker_ctx.report_progress(JobProgress::subtask_position(
@@ -773,7 +780,7 @@ pub(crate) async fn visit_and_update_media(
 		library_config,
 		max_concurrency,
 	}: MediaBuildOperation,
-	worker_ctx: &WorkerCtx,
+	worker_ctx: &JobContext,
 	params: Vec<(PathBuf, BookVisitOperation)>,
 ) -> Result<MediaOperationOutput, JobError> {
 	let mut output = MediaOperationOutput::default();
@@ -783,7 +790,7 @@ pub(crate) async fn visit_and_update_media(
 		return Ok(output);
 	}
 
-	let conn = worker_ctx.conn.as_ref();
+	let conn = worker_ctx.conn();
 	let paths_to_operation = params
 		.iter()
 		.map(|(p, o)| (p.to_string_lossy().to_string(), *o))
@@ -791,15 +798,16 @@ pub(crate) async fn visit_and_update_media(
 	let paths = paths_to_operation.keys().cloned().collect::<Vec<String>>();
 	let paths_len = paths.len();
 
-	let media = media::ModelWithMetadata::find()
-		.filter(
-			media::Column::Path
-				.is_in(paths.iter().map(|p| p.to_string()).collect::<Vec<String>>()),
-		)
-		.filter(media::Column::SeriesId.eq(series_id.to_string()))
-		.into_model::<media::ModelWithMetadata>()
-		.all(conn)
-		.await?;
+	let mut media = Vec::with_capacity(paths_len);
+	for chunk in paths.chunks(SQLITE_BIND_LIMIT) {
+		let batch = media::ModelWithMetadata::find()
+			.filter(media::Column::Path.is_in(chunk.to_vec()))
+			.filter(media::Column::SeriesId.eq(series_id.to_string()))
+			.into_model::<media::ModelWithMetadata>()
+			.all(conn)
+			.await?;
+		media.extend(batch);
+	}
 
 	if media.len() != paths_len {
 		output.logs.push(JobExecuteLog::warn(
@@ -848,7 +856,7 @@ pub(crate) async fn visit_and_update_media(
 					?path,
 					"(Chunk {chunk_index}, Book {book_index}) Starting media visit"
 				);
-				handle_book(ctx, library_config, &worker_ctx.config)
+				handle_book(ctx, library_config, worker_ctx.config())
 					.await
 					.map_err(|e| (e, path.clone()))
 			};
@@ -890,7 +898,7 @@ pub(crate) async fn visit_and_update_media(
 
 	while let Some(result) = build_results.pop_front() {
 		let error_ctx = result.error_ctx();
-		match handle_book_visit_operation(&worker_ctx.conn, result).await {
+		match handle_book_visit_operation(worker_ctx.conn(), result).await {
 			Ok(_) => {
 				output.updated_media += 1;
 			},
