@@ -115,7 +115,7 @@ function useChapterProgress() {
 
 	useEffect(() => {
 		if (!enableDebugAnalytics) return
-		if (pagesLeftInChapterRaw == null || pagesLeftInChapterRaw > 0) return
+		if (pagesLeftInChapterRaw == null || pagesLeftInChapterRaw >= 0) return
 
 		const storeSnapshot = useEpubLocationStore.getState()
 		Sentry.captureMessage('Encountered negative pages left in chapter', {
