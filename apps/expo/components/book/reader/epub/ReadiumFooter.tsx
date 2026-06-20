@@ -145,7 +145,7 @@ export default function ReadiumFooter() {
 					<MenuItem
 						show={showMenu}
 						delay={50}
-						label={t('epubMenu.appearance')}
+						label={t('epubMenu.bookmarksAndAnnotations')}
 						icon={Palette}
 						onPress={() => {
 							openSheet('settings')
